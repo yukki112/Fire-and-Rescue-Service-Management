@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire Login Button</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .fire-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+        
+        .fire-btn {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b00, #ff0000, #ff9900);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(255, 106, 0, 0.5);
+            overflow: hidden;
+            transition: transform 0.5s, box-shadow 0.5s;
+            animation: pulse 2s infinite;
+            text-decoration: none;
+        }
+        
+        .fire-btn:hover {
+            transform: scale(1.05) rotate(5deg);
+            box-shadow: 0 0 50px rgba(255, 106, 0, 0.8);
+            animation: none;
+        }
+        
+        .fire-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .fire-btn::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: conic-gradient(
+                transparent, transparent, transparent, 
+                #ff9900, transparent, transparent, transparent, 
+                #ff6b00, transparent, transparent, transparent, 
+                #ff0000
+            );
+            animation: rotate 4s linear infinite;
+        }
+        
+        .fire-btn::after {
+            content: '';
+            position: absolute;
+            inset: 10px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 50%;
+        }
+        
+        .btn-content {
+            position: absolute;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            border-radius: 50%;
+            width: 95%;
+            height: 95%;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        
+        .fire-btn:hover .btn-content {
+            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .fire-logo {
+            font-size: 60px;
+            margin-bottom: 15px;
+            color: #ff6b00;
+            text-shadow: 0 0 15px rgba(255, 107, 0, 0.7);
+            animation: flicker 3s infinite;
+        }
+        
+        .btn-text {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #ff6b00, #ff0000, #ff9900);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 5px rgba(255, 107, 0, 0.3);
+        }
+        
+        .btn-subtext {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 80%;
+        }
+        
+        .flames {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            filter: blur(15px);
+            z-index: -1;
+        }
+        
+        .flame {
+            position: absolute;
+            background: linear-gradient(to top, #ff6b00, transparent);
+            border-radius: 50% 50% 20% 20%;
+            opacity: 0.7;
+            animation: flameAnimation 3s infinite;
+        }
+        
+        .flame:nth-child(1) {
+            width: 40px;
+            height: 80px;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation-delay: 0s;
+        }
+        
+        .flame:nth-child(2) {
+            width: 30px;
+            height: 60px;
+            bottom: -15px;
+            left: 30%;
+            transform: translateX(-50%) rotate(30deg);
+            animation-delay: 0.5s;
+        }
+        
+        .flame:nth-child(3) {
+            width: 30px;
+            height: 60px;
+            bottom: -15px;
+            left: 70%;
+            transform: translateX(-50%) rotate(-30deg);
+            animation-delay: 1s;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 25px rgba(255, 106, 0, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 106, 0, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 25px rgba(255, 106, 0, 0.5);
+            }
+        }
+        
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes flicker {
+            0%, 100% {
+                opacity: 1;
+                text-shadow: 0 0 15px rgba(255, 107, 0, 0.7);
+            }
+            50% {
+                opacity: 0.8;
+                text-shadow: 0 0 20px rgba(255, 107, 0, 1);
+            }
+        }
+        
+        @keyframes flameAnimation {
+            0%, 100% {
+                height: 60px;
+                opacity: 0.6;
+            }
+            50% {
+                height: 80px;
+                opacity: 0.8;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="fire-container">
+        <a href="login.php" class="fire-btn" id="fireBtn">
+            <div class="flames">
+                <div class="flame"></div>
+                <div class="flame"></div>
+                <div class="flame"></div>
+            </div>
+            <div class="btn-content">
+                <div class="fire-logo">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="btn-text">Click Me To Login</div>
+                <div class="btn-subtext">Fire and Rescue Service Management</div>
+            </div>
+        </a>
+    </div>
+</body>
+</html>
