@@ -1641,22 +1641,22 @@ unset($_SESSION['error_message']);
                     <span class="text">Incident Response Dispatch</span>
                 </div>
                 <div class="sidebar-dropdown collapse <?= $active_tab == 'modules' && $active_module == 'ird' ? 'show' : '' ?>" id="irdDropdown">
-                    <a href="?tab=modules&module=ird&submodule=intake" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'intake' ? 'active' : '' ?>">
+                    <a href="ii.php" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'intake' ? 'active' : '' ?>">
                         <i class='bx bx-clipboard'></i> Incident Intake
                     </a>
-                    <a href="?tab=modules&module=ird&submodule=mapping" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'mapping' ? 'active' : '' ?>">
+                    <a href="lm.php" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'mapping' ? 'active' : '' ?>">
                         <i class='bx bx-map-pin'></i> Location Mapping
                     </a>
-                    <a href="?tab=modules&module=ird&submodule=assignment" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'assignment' ? 'active' : '' ?>">
+                    <a href="ua.php" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'assignment' ? 'active' : '' ?>">
                         <i class='bx bx-group'></i> Unit Assignment
                     </a>
-                    <a href="?tab=modules&module=ird&submodule=communication" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'communication' ? 'active' : '' ?>">
+                    <a href="comm.php" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'communication' ? 'active' : '' ?>">
                         <i class='bx bx-chat'></i> Communication
                     </a>
-                    <a href="?tab=modules&module=ird&submodule=monitoring" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'monitoring' ? 'active' : '' ?>">
+                    <a href="sm.php" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'monitoring' ? 'active' : '' ?>">
                         <i class='bx bx-show'></i> Status Monitoring
                     </a>
-                    <a href="?tab=modules&module=ird&submodule=access" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'access' ? 'active' : '' ?>">
+                    <a href="ac.php" class="sidebar-dropdown-link <?= $active_module == 'ird' && $active_submodule == 'access' ? 'active' : '' ?>">
                         <i class='bx bx-lock'></i> Access Control
                     </a>
                 </div>
@@ -1667,22 +1667,22 @@ unset($_SESSION['error_message']);
                     <span class="text">Fire Station Inventory & Equipment Tracking</span>
                 </div>
                 <div class="sidebar-dropdown collapse <?= $active_tab == 'modules' && $active_module == 'fsiet' ? 'show' : '' ?>" id="fsietDropdown">
-                    <a href="?tab=modules&module=fsiet&submodule=inventory" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'inventory' ? 'active' : '' ?>">
+                    <a href="im.php" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'inventory' ? 'active' : '' ?>">
                         <i class='bx bx-package'></i> Inventory Management
                     </a>
-                    <a href="?tab=modules&module=fsiet&submodule=equipment" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'equipment' ? 'active' : '' ?>">
+                    <a href="elt.php" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'equipment' ? 'active' : '' ?>">
                         <i class='bx bx-wrench'></i> Equipment Location Tracking
                     </a>
-                    <a href="?tab=modules&module=fsiet&submodule=maintenance" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'maintenance' ? 'active' : '' ?>">
+                    <a href="mis.php" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'maintenance' ? 'active' : '' ?>">
                         <i class='bx bx-calendar-check'></i> Maintenance & Inspection Scheduler
                     </a>
-                    <a href="?tab=modules&module=fsiet&submodule=repair" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'repair' ? 'active' : '' ?>">
+                    <a href="rom.php" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'repair' ? 'active' : '' ?>">
                         <i class='bx bx-cog'></i> Repair & Out-of-Service Management
                     </a>
-                    <a href="?tab=modules&module=fsiet&submodule=reports" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'reports' ? 'active' : '' ?>">
+                    <a href="iral.php" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'reports' ? 'active' : '' ?>">
                         <i class='bx bx-file'></i> Inventory Reports & Audit Logs
                     </a>
-                    <a href="?tab=modules&module=fsiet&submodule=access" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'access' ? 'active' : '' ?>">
+                    <a href="rbac.php" class="sidebar-dropdown-link <?= $active_module == 'fsiet' && $active_submodule == 'access' ? 'active' : '' ?>">
                         <i class='bx bx-shield'></i> Role-Based Access Control
                     </a>
                 </div>
@@ -1693,22 +1693,22 @@ unset($_SESSION['error_message']);
                     <span class="text">Hydrant and Water Resource Mapping</span>
                 </div>
                 <div class="sidebar-dropdown collapse <?= $active_tab == 'modules' && $active_module == 'hwrm' ? 'show' : '' ?>" id="hwrmDropdown">
-                    <a href="?tab=modules&module=hwrm&submodule=mapping" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'mapping' ? 'active' : '' ?>">
+                    <a href="hrm.php" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'mapping' ? 'active' : '' ?>">
                         <i class='bx bx-map'></i> Hydrant Resources Mapping
                     </a>
-                    <a href="?tab=modules&module=hwrm&submodule=database" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'database' ? 'active' : '' ?>">
+                    <a href="wsd.php" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'database' ? 'active' : '' ?>">
                         <i class='bx bx-data'></i> Water Source Database
                     </a>
-                    <a href="?tab=modules&module=hwrm&submodule=monitoring" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'monitoring' ? 'active' : '' ?>">
+                    <a href="wstm.php" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'monitoring' ? 'active' : '' ?>">
                         <i class='bx bx-pulse'></i> Water Source Status Monitoring
                     </a>
-                    <a href="?tab=modules&module=hwrm&submodule=inspection" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'inspection' ? 'active' : '' ?>">
+                    <a href="imr.php" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'inspection' ? 'active' : '' ?>">
                         <i class='bx bx-check-circle'></i> Inspection & Maintenance Records
                     </a>
-                    <a href="?tab=modules&module=hwrm&submodule=analytics" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'analytics' ? 'active' : '' ?>">
+                    <a href="ra.php" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'analytics' ? 'active' : '' ?>">
                         <i class='bx bx-bar-chart'></i> Reporting & Analytics
                     </a>
-                    <a href="?tab=modules&module=hwrm&submodule=access" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'access' ? 'active' : '' ?>">
+                    <a href="ap.php" class="sidebar-dropdown-link <?= $active_module == 'hwrm' && $active_submodule == 'access' ? 'active' : '' ?>">
                         <i class='bx bx-lock-alt'></i> Access and Permissions
                     </a>
                 </div>
@@ -1719,25 +1719,25 @@ unset($_SESSION['error_message']);
                     <span class="text">Personnel Shift Scheduling</span>
                 </div>
                 <div class="sidebar-dropdown collapse <?= $active_tab == 'modules' && $active_module == 'pss' ? 'show' : '' ?>" id="pssDropdown">
-                    <a href="?tab=modules&module=pss&submodule=calendar" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'calendar' ? 'active' : '' ?>">
+                    <a href="scm.php" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'calendar' ? 'active' : '' ?>">
                         <i class='bx bx-calendar'></i> Shift Calendar Management
                     </a>
-                    <a href="?tab=modules&module=pss&submodule=roster" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'roster' ? 'active' : '' ?>">
+                    <a href="pr.php" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'roster' ? 'active' : '' ?>">
                         <i class='bx bx-group'></i> Personnel Roster
                     </a>
-                    <a href="?tab=modules&module=pss&submodule=assignment" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'assignment' ? 'active' : '' ?>">
+                    <a href="sa.php" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'assignment' ? 'active' : '' ?>">
                         <i class='bx bx-user-check'></i> Shift Assignment
                     </a>
-                    <a href="?tab=modules&module=pss&submodule=leave" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'leave' ? 'active' : '' ?>">
+                    <a href="lam.php" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'leave' ? 'active' : '' ?>">
                         <i class='bx bx-time'></i> Leave and Absence Management
                     </a>
-                    <a href="?tab=modules&module=pss&submodule=notifications" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'notifications' ? 'active' : '' ?>">
+                    <a href="na.php" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'notifications' ? 'active' : '' ?>">
                         <i class='bx bx-bell'></i> Notifications and Alerts
                     </a>
-                    <a href="?tab=modules&module=pss&submodule=reports" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'reports' ? 'active' : '' ?>">
+                    <a href="rl.php" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'reports' ? 'active' : '' ?>">
                         <i class='bx bx-file-blank'></i> Reporting & Logs
                     </a>
-                    <a href="?tab=modules&module=pss&submodule=access" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'access' ? 'active' : '' ?>">
+                    <a href="rba.php" class="sidebar-dropdown-link <?= $active_module == 'pss' && $active_submodule == 'access' ? 'active' : '' ?>">
                         <i class='bx bx-shield-check'></i> Role-Based Access
                     </a>
                 </div>
@@ -1748,28 +1748,28 @@ unset($_SESSION['error_message']);
                     <span class="text">Training and Certification Records</span>
                 </div>
                 <div class="sidebar-dropdown collapse <?= $active_tab == 'modules' && $active_module == 'tcr' ? 'show' : '' ?>" id="tcrDropdown">
-                    <a href="?tab=modules&module=tcr&submodule=profiles" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'profiles' ? 'active' : '' ?>">
+                    <a href="prp.php" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'profiles' ? 'active' : '' ?>">
                         <i class='bx bx-user'></i> Personnel Training Profiles
                     </a>
-                    <a href="?tab=modules&module=tcr&submodule=courses" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'courses' ? 'active' : '' ?>">
+                    <a href="tcm.php" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'courses' ? 'active' : '' ?>">
                         <i class='bx bx-book'></i> Training Course Management
                     </a>
-                    <a href="?tab=modules&module=tcr&submodule=scheduling" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'scheduling' ? 'active' : '' ?>">
+                    <a href="tcs.php" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'scheduling' ? 'active' : '' ?>">
                         <i class='bx bx-calendar-event'></i> Training Calendar and Scheduling
                     </a>
-                    <a href="?tab=modules&module=tcr&submodule=certification" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'certification' ? 'active' : '' ?>">
+                    <a href="ct.php" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'certification' ? 'active' : '' ?>">
                         <i class='bx bx-certification'></i> Certification Tracking
                     </a>
-                    <a href="?tab=modules&module=tcr&submodule=compliance" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'compliance' ? 'active' : '' ?>">
+                    <a href="tcm.php" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'compliance' ? 'active' : '' ?>">
                         <i class='bx bx-check-shield'></i> Training Compliance Monitoring
                     </a>
-                    <a href="?tab=modules&module=tcr&submodule=evaluation" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'evaluation' ? 'active' : '' ?>">
+                    <a href="ear.php" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'evaluation' ? 'active' : '' ?>">
                         <i class='bx bx-star'></i> Evaluation and Assessment Records
                     </a>
-                    <a href="?tab=modules&module=tcr&submodule=reports" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'reports' ? 'active' : '' ?>">
+                    <a href="ral.php" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'reports' ? 'active' : '' ?>">
                         <i class='bx bx-file-find'></i> Reporting and Audit Logs
                     </a>
-                    <a href="?tab=modules&module=tcr&submodule=access" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'access' ? 'active' : '' ?>">
+                    <a href="acur.php" class="sidebar-dropdown-link <?= $active_module == 'tcr' && $active_submodule == 'access' ? 'active' : '' ?>">
                         <i class='bx bx-lock-open'></i> Access Control and User Roles
                     </a>
                 </div>
@@ -1780,25 +1780,25 @@ unset($_SESSION['error_message']);
                     <span class="text">Fire Inspection and Compliance Records</span>
                 </div>
                 <div class="sidebar-dropdown collapse <?= $active_tab == 'modules' && $active_module == 'ficr' ? 'show' : '' ?>" id="ficrDropdown">
-                    <a href="?tab=modules&module=ficr&submodule=registry" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'registry' ? 'active' : '' ?>">
+                    <a href="er.php" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'registry' ? 'active' : '' ?>">
                         <i class='bx bx-building'></i> Establishment/Property Registry
                     </a>
-                    <a href="?tab=modules&module=ficr&submodule=scheduling" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'scheduling' ? 'active' : '' ?>">
+                    <a href="isa.php" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'scheduling' ? 'active' : '' ?>">
                         <i class='bx bx-calendar-plus'></i> Inspection Scheduling and Assignment
                     </a>
-                    <a href="?tab=modules&module=ficr&submodule=checklist" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'checklist' ? 'active' : '' ?>">
+                    <a href="icm.php" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'checklist' ? 'active' : '' ?>">
                         <i class='bx bx-list-check'></i> Inspection Checklist Management
                     </a>
-                    <a href="?tab=modules&module=ficr&submodule=violations" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'violations' ? 'active' : '' ?>">
+                    <a href="vct.php" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'violations' ? 'active' : '' ?>">
                         <i class='bx bx-error'></i> Violation and Compliance Tracking
                     </a>
-                    <a href="?tab=modules&module=ficr&submodule=clearance" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'clearance' ? 'active' : '' ?>">
+                    <a href="ccm.php" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'clearance' ? 'active' : '' ?>">
                         <i class='bx bx-badge-check'></i> Clearance and Certification Management
                     </a>
-                    <a href="?tab=modules&module=ficr&submodule=analytics" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'analytics' ? 'active' : '' ?>">
+                    <a href="ra.php" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'analytics' ? 'active' : '' ?>">
                         <i class='bx bx-line-chart'></i> Reporting and Analytics
                     </a>
-                    <a href="?tab=modules&module=ficr&submodule=access" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'access' ? 'active' : '' ?>">
+                    <a href="aurm.php" class="sidebar-dropdown-link <?= $active_module == 'ficr' && $active_submodule == 'access' ? 'active' : '' ?>">
                         <i class='bx bx-user-circle'></i> Access and User Role Management
                     </a>
                 </div>
@@ -1809,25 +1809,25 @@ unset($_SESSION['error_message']);
                     <span class="text">Post-Incident Analysis and Reporting</span>
                 </div>
                 <div class="sidebar-dropdown collapse <?= $active_tab == 'modules' && $active_module == 'piar' ? 'show' : '' ?>" id="piarDropdown">
-                    <a href="?tab=modules&module=piar&submodule=documentation" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'documentation' ? 'active' : '' ?>">
+                    <a href="isd.php" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'documentation' ? 'active' : '' ?>">
                         <i class='bx bx-file-blank'></i> Incident Summary Documentation
                     </a>
-                    <a href="?tab=modules&module=piar&submodule=timeline" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'timeline' ? 'active' : '' ?>">
+                    <a href="rtt.php" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'timeline' ? 'active' : '' ?>">
                         <i class='bx bx-time-five'></i> Response Timeline Tracking
                     </a>
-                    <a href="?tab=modules&module=piar&submodule=personnel" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'personnel' ? 'active' : '' ?>">
+                    <a href="pui.php" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'personnel' ? 'active' : '' ?>">
                         <i class='bx bx-group'></i> Personnel and Unit Involvement
                     </a>
-                    <a href="?tab=modules&module=piar&submodule=investigation" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'investigation' ? 'active' : '' ?>">
+                    <a href="coi.php" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'investigation' ? 'active' : '' ?>">
                         <i class='bx bx-search'></i> Cause and Origin Investigation
                     </a>
-                    <a href="?tab=modules&module=piar&submodule=damage" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'damage' ? 'active' : '' ?>">
+                    <a href="da.php" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'damage' ? 'active' : '' ?>">
                         <i class='bx bx-home'></i> Damage Assessment
                     </a>
-                    <a href="?tab=modules&module=piar&submodule=lessons" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'lessons' ? 'active' : '' ?>">
+                    <a href="arll.php" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'lessons' ? 'active' : '' ?>">
                         <i class='bx bx-bulb'></i> Action Review and Lessons Learned
                     </a>
-                    <a href="?tab=modules&module=piar&submodule=reports" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'reports' ? 'active' : '' ?>">
+                    <a href="rga.php" class="sidebar-dropdown-link <?= $active_module == 'piar' && $active_submodule == 'reports' ? 'active' : '' ?>">
                         <i class='bx bx-archive'></i> Report Generation and Archiving
                     </a>
                 </div>
