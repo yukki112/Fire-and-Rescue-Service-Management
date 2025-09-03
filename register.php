@@ -268,7 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         /* Left side - Branding */
         .auth-brand {
-            background: black;
+            background: #be013c;
             padding: 40px 32px;
             display: flex;
             flex-direction: column;
