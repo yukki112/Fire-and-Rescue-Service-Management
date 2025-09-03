@@ -425,7 +425,7 @@ if (empty($_SESSION['employee_id']) && isset($_COOKIE['remember_me_employee'])) 
         }
         
         .auth-brand {
-            background: black;
+            background: #be013c;
             padding: 40px 32px;
             display: flex;
             flex-direction: column;
