@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                         if ($user['is_admin']) {
                             $_SESSION['admin_logged_in'] = true;
                             $_SESSION['user_type'] = 'admin';
-                            header("Location: IRD/ird.php");
+                            header("Location: admin/dashboard.php");
                             exit();
                         } else {
                             $_SESSION['community_logged_in'] = true;
@@ -239,7 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                         // Redirect to employee portal
                         $_SESSION['employee_logged_in'] = true;
                         $_SESSION['user_type'] = 'employee';
-                        header("Location: employee/ird.php");
+                        header("Location: employee/index.php");
                         exit();
                     }
                 } else {
@@ -289,7 +289,7 @@ if (empty($_SESSION['user_id']) && isset($_COOKIE['remember_me'])) {
             if ($user['is_admin']) {
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['user_type'] = 'admin';
-                header("Location: IRD/ird.php");
+                header("Location: IRD/index.php");
                 exit();
             } else {
                 $_SESSION['community_logged_in'] = true;

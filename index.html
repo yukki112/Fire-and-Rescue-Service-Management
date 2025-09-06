@@ -3,9 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fire Login Button</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>QCprotektado - Fire & Rescue Service Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --primary-red: #D32F2F;
+            --dark-red: #B71C1C;
+            --light-red: #EF5350;
+            --accent: #FF5722;
+            --dark-gray: #212121;
+            --light-gray: #f5f5f5;
+            --text: #333333;
+            --white: #ffffff;
+            --gradient: linear-gradient(135deg, var(--dark-red) 0%, var(--primary-red) 100%);
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            --hover-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -13,222 +29,1304 @@
         }
         
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            color: var(--text);
+            background-color: var(--light-gray);
+            line-height: 1.6;
+            overflow-x: hidden;
         }
         
-        .fire-container {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 1000px;
+        h1, h2, h3, h4, h5 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: var(--dark-red);
         }
         
-        .fire-btn {
-            position: relative;
-            width: 280px;
-            height: 280px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #ff6b00, #ff0000, #ff9900);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 0 25px rgba(255, 106, 0, 0.5);
-            overflow: hidden;
-            transition: transform 0.5s, box-shadow 0.5s;
-            animation: pulse 2s infinite;
-            text-decoration: none;
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
         
-        .fire-btn:hover {
-            transform: scale(1.05) rotate(5deg);
-            box-shadow: 0 0 50px rgba(255, 106, 0, 0.8);
-            animation: none;
-        }
-        
-        .fire-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .fire-btn::before {
-            content: '';
-            position: absolute;
-            width: 150%;
-            height: 150%;
-            background: conic-gradient(
-                transparent, transparent, transparent, 
-                #ff9900, transparent, transparent, transparent, 
-                #ff6b00, transparent, transparent, transparent, 
-                #ff0000
-            );
-            animation: rotate 4s linear infinite;
-        }
-        
-        .fire-btn::after {
-            content: '';
-            position: absolute;
-            inset: 10px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            border-radius: 50%;
-        }
-        
-        .btn-content {
-            position: absolute;
-            z-index: 1;
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: white;
-            text-align: center;
-            padding: 30px;
-            border-radius: 50%;
-            width: 95%;
-            height: 95%;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
         }
         
-        .fire-btn:hover .btn-content {
-            backdrop-filter: blur(8px);
-            background: rgba(0, 0, 0, 0.3);
-        }
-        
-        .fire-logo {
-            font-size: 60px;
-            margin-bottom: 15px;
-            color: #ff6b00;
-            text-shadow: 0 0 15px rgba(255, 107, 0, 0.7);
-            animation: flicker 3s infinite;
-        }
-        
-        .btn-text {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            background: linear-gradient(to right, #ff6b00, #ff0000, #ff9900);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 5px rgba(255, 107, 0, 0.3);
-        }
-        
-        .btn-subtext {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-            max-width: 80%;
-        }
-        
-        .flames {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            filter: blur(15px);
-            z-index: -1;
+        .fire-loader {
+            position: relative;
+            width: 100px;
+            height: 120px;
+            margin-bottom: 20px;
         }
         
         .flame {
             position: absolute;
-            background: linear-gradient(to top, #ff6b00, transparent);
+            bottom: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(ellipse at bottom, #FF5722 0%, #FF9800 20%, transparent 70%);
             border-radius: 50% 50% 20% 20%;
-            opacity: 0.7;
-            animation: flameAnimation 3s infinite;
+            transform-origin: center bottom;
+            animation: flicker 1.2s ease-in-out infinite alternate;
         }
         
-        .flame:nth-child(1) {
-            width: 40px;
-            height: 80px;
-            bottom: -20px;
+        .flame:before {
+            content: '';
+            position: absolute;
+            top: -20px;
             left: 50%;
             transform: translateX(-50%);
-            animation-delay: 0s;
-        }
-        
-        .flame:nth-child(2) {
-            width: 30px;
-            height: 60px;
-            bottom: -15px;
-            left: 30%;
-            transform: translateX(-50%) rotate(30deg);
-            animation-delay: 0.5s;
-        }
-        
-        .flame:nth-child(3) {
-            width: 30px;
-            height: 60px;
-            bottom: -15px;
-            left: 70%;
-            transform: translateX(-50%) rotate(-30deg);
-            animation-delay: 1s;
-        }
-        
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 25px rgba(255, 106, 0, 0.5);
-            }
-            50% {
-                box-shadow: 0 0 40px rgba(255, 106, 0, 0.8);
-            }
-            100% {
-                box-shadow: 0 0 25px rgba(255, 106, 0, 0.5);
-            }
-        }
-        
-        @keyframes rotate {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+            width: 60px;
+            height: 80px;
+            background: radial-gradient(ellipse at center, #FFF8E1 0%, #FFEB3B 30%, transparent 70%);
+            border-radius: 50% 50% 20% 20%;
         }
         
         @keyframes flicker {
             0%, 100% {
-                opacity: 1;
-                text-shadow: 0 0 15px rgba(255, 107, 0, 0.7);
+                transform: scaleY(1) rotate(0deg);
             }
             50% {
-                opacity: 0.8;
-                text-shadow: 0 0 20px rgba(255, 107, 0, 1);
+                transform: scaleY(1.1) rotate(2deg);
+            }
+            75% {
+                transform: scaleY(0.9) rotate(-2deg);
             }
         }
         
-        @keyframes flameAnimation {
-            0%, 100% {
-                height: 60px;
-                opacity: 0.6;
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+        
+        /* Header */
+        header {
+            background: var(--gradient);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        header.scrolled {
+            padding: 0.5rem 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-img {
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s;
+        }
+        
+        .logo-img:hover {
+            transform: rotate(15deg);
+        }
+        
+        .logo-img img {
+            width: 100%;
+            height: auto;
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+        
+        nav a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: white;
+            transition: width 0.3s;
+        }
+        
+        nav a:hover:after {
+            width: 100%;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-left: 1rem;
+        }
+        
+        .auth-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .login-btn {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .login-btn:hover {
+            background-color: white;
+            color: var(--primary-red);
+        }
+        
+        .register-btn {
+            background-color: white;
+            color: var(--primary-red);
+            border: 2px solid white;
+        }
+        
+        .register-btn:hover {
+            background-color: transparent;
+            color: white;
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 800 400"><rect fill="%23D32F2F" width="800" height="400"/><path fill="%23B71C1C" fill-opacity="0.4" d="M0 192L26.7 202.7C53.3 213 107 235 160 234.7C213.3 235 267 213 320 197.3C373.3 181 427 171 480 186.7C533.3 203 587 245 640 250.7C693.3 256 747 224 773.3 208L800 192L800 401L773.3 401C746.7 401 693 401 640 401C586.7 401 533 401 480 401C426.7 401 373 401 320 401C266.7 401 213 401 160 401C106.7 401 53 401 27 401L0 401Z"></path></svg>') no-repeat bottom;
+            background-size: cover;
+            color: white;
+            padding: 5rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 3.2rem;
+            margin-bottom: 1.5rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 1.2s ease-out;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: white;
+            color: var(--primary-red);
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 2px solid white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 1.4s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn:hover:before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            background-color: transparent;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Services Section */
+        .services {
+            padding: 5rem 0;
+            background-color: white;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3.5rem;
+            position: relative;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 4px;
+            background-color: var(--primary-red);
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.5rem;
+        }
+        
+        .service-card {
+            background: var(--light-gray);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            top: 0;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-12px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .service-icon {
+            background: var(--gradient);
+            color: white;
+            font-size: 2.2rem;
+            padding: 2rem;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .service-icon::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: skewX(-20deg) translateX(-200%);
+            transition: transform 0.6s;
+        }
+        
+        .service-card:hover .service-icon::after {
+            transform: skewX(-20deg) translateX(500%);
+        }
+        
+        .service-content {
+            padding: 2rem;
+        }
+        
+        .service-content h3 {
+            margin-bottom: 1.2rem;
+            font-size: 1.4rem;
+        }
+        
+        .service-content p {
+            color: #555;
+        }
+        
+        /* About Us Section */
+        .about {
+            padding: 5rem 0;
+            background-color: var(--light-gray);
+        }
+        
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+        
+        .about-text h2 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .about-text p {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+        
+        .about-image {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--hover-shadow);
+            transition: transform 0.5s;
+            position: relative;
+        }
+        
+        .about-image:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient);
+            opacity: 0;
+            z-index: 1;
+            transition: opacity 0.3s;
+        }
+        
+        .about-image:hover:before {
+            opacity: 0.1;
+        }
+        
+        .about-image:hover {
+            transform: scale(1.02);
+        }
+        
+        .about-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.5s;
+        }
+        
+        .about-image:hover img {
+            transform: scale(1.05);
+        }
+        
+        /* Leadership Section */
+        .leadership {
+            padding: 5rem 0;
+            background-color: white;
+        }
+        
+        .leadership-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2.5rem;
+        }
+        
+        .leader-card {
+            background: var(--light-gray);
+            border-radius: 12px;
+            overflow: hidden;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s;
+            position: relative;
+        }
+        
+        .leader-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .leader-image {
+            width: 100%;
+            height: 250px;
+            background-color: #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .leader-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .leader-card:hover .leader-image img {
+            transform: scale(1.1);
+        }
+        
+        .leader-info {
+            padding: 1.5rem;
+        }
+        
+        .leader-info h3 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .leader-role {
+            color: var(--primary-red);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .leader-info p {
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        /* Stats Section */
+        .stats {
+            padding: 5rem 0;
+            background: var(--gradient);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stats::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" opacity="0.05"><circle cx="50" cy="50" r="40" fill="white" /></svg>');
+            background-size: 200px;
+            opacity: 0.1;
+        }
+        
+        .stats h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 3.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2.5rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-item {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            z-index: -1;
+        }
+        
+        .stat-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .stat-item h3 {
+            font-size: 2.8rem;
+            margin-bottom: 0.8rem;
+            color: white;
+        }
+        
+        .stat-item p {
+            font-size: 1.1rem;
+        }
+        
+        /* Chart Section */
+        .chart-section {
+            padding: 5rem 0;
+            background-color: var(--light-gray);
+        }
+        
+        .chart-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--gradient);
+        }
+        
+        /* Emergency Section */
+        .emergency {
+            padding: 5rem 0;
+            background: var(--dark-gray);
+            color: white;
+            text-align: center;
+            position: relative;
+        }
+        
+        .emergency::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" opacity="0.05"><polygon points="50,0 100,50 50,100 0,50" fill="white" /></svg>');
+            background-size: 150px;
+            opacity: 0.1;
+        }
+        
+        .emergency h2 {
+            color: white;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .emergency p {
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+            font-size: 1.2rem;
+        }
+        
+        .emergency-btn {
+            background-color: var(--accent);
+            color: white;
+            font-size: 1.5rem;
+            padding: 1.2rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.7);
             }
-            50% {
-                height: 80px;
-                opacity: 0.8;
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 87, 34, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 87, 34, 0);
+            }
+        }
+        
+        .emergency-btn:hover {
+            background-color: white;
+            color: var(--accent);
+            transform: scale(1.05);
+            animation: none;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark-gray);
+            color: white;
+            padding: 4rem 0 1.5rem;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2.5rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.8rem;
+        }
+        
+        .footer-section h3:after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-red);
+            bottom: 0;
+            left: 0;
+        }
+        
+        .footer-section p, .footer-section li {
+            margin-bottom: 1rem;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+            display: inline-block;
+        }
+        
+        .footer-section a:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-icons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .social-icons a:hover {
+            background: var(--primary-red);
+            transform: translateY(-5px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 2.5rem;
+            border-top: 1px solid #444;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 99;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            
+            .services-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+            }
+            
+            .about-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .about-image {
+                order: -1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            nav ul {
+                margin-top: 1.5rem;
+                flex-direction: column;
+                gap: 1.2rem;
+                display: none;
+                width: 100%;
+            }
+            
+            nav ul.active {
+                display: flex;
+            }
+            
+            .auth-buttons {
+                margin-top: 1rem;
+                margin-left: 0;
+                justify-content: center;
+            }
+            
+            .hero {
+                padding: 4rem 0;
+            }
+            
+            .hero h1 {
+                font-size: 2.3rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+            
+            .leadership-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+            
+            .chart-container {
+                padding: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .btn, .emergency-btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 1.1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .leadership-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .service-card {
+                max-width: 320px;
+                margin: 0 auto;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .footer-section h3:after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            
+            .social-icons {
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
-    <div class="fire-container">
-        <a href="login.php" class="fire-btn" id="fireBtn">
-            <div class="flames">
-                <div class="flame"></div>
-                <div class="flame"></div>
-                <div class="flame"></div>
-            </div>
-            <div class="btn-content">
-                <div class="fire-logo">
-                    <i class="fas fa-fire"></i>
-                </div>
-                <div class="btn-text">Click Me To Login</div>
-                <div class="btn-subtext">Fire and Rescue Service Management</div>
-            </div>
-        </a>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="fire-loader">
+            <div class="flame"></div>
+        </div>
+        <p class="loading-text">QCprotektado Loading...</p>
     </div>
+
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <div class="logo-img">
+                    <img src="img/FRSM.png" alt="QCprotektado Logo">
+                </div>
+                <div class="logo-text">QCprotektado</div>
+            </div>
+            <button class="mobile-menu-btn">☰</button>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#stats">Statistics</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li class="auth-buttons">
+                        <a href="login.php" class="auth-btn login-btn">Login</a>
+                        <a href="register.php" class="auth-btn register-btn">Register</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container hero-content">
+            <h1>QCprotektado Fire & Rescue Service Management</h1>
+            <p>Dedicated to protecting lives and property through rapid emergency response, advanced fire prevention, and community education programs in 2025.</p>
+            <a href="#contact" class="btn">Emergency Contact</a>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="container">
+            <h2 class="section-title">Our Services</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-fire-extinguisher"></i>
+                    </div>
+                    <div class="service-content">
+                        <h3>Emergency Response</h3>
+                        <p>24/7 rapid response to fire emergencies with strategically located stations and advanced equipment in 2025.</p>
+                    </div>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="service-content">
+                        <h3>Fire Prevention</h3>
+                        <p>Comprehensive inspection services and safety consultations to prevent fires before they start in 2025.</p>
+                    </div>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-life-ring"></i>
+                    </div>
+                    <div class="service-content">
+                        <h3>Rescue Operations</h3>
+                        <p>Specialized technical rescue teams for urban search, water rescue, and hazardous materials incidents in 2025.</p>
+                    </div>
+                </div>
+              
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="service-content">
+                        <h3>Fire Investigation</h3>
+                        <p>Thorough investigation of fire incidents to determine causes and prevent future occurrences in 2025.</p>
+                    </div>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="service-content">
+                        <h3>Building Safety Inspection</h3>
+                        <p>Comprehensive inspections to ensure buildings comply with fire safety codes and regulations in 2025.</p>
+                    </div>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <div class="service-content">
+                        <h3>Flood Response</h3>
+                        <p>Specialized water rescue teams and equipment for flood emergencies and water-related incidents in 2025.</p>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section class="about" id="about">
+        <div class="container">
+            <h2 class="section-title">About Us</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>Protecting Quezon City 2025</h2>
+                    <p>QCprotektado Fire & Rescue Service Management has been at the forefront of emergency response and fire prevention in Quezon City for over three decades. Our dedicated team of firefighters, paramedics, and rescue specialists work tirelessly to protect lives and property.</p>
+                    <p>We operate 28 fire stations strategically located throughout Quezon City, ensuring rapid response times to emergencies. Our state-of-the-art equipment and continuous training programs enable us to handle a wide range of emergencies, from structural fires to technical rescues.</p>
+                    <p>Beyond emergency response, we are committed to fire prevention through public education, building inspections, and community outreach programs. Our goal is to create a fire-safe community where residents and businesses can thrive without fear of fire-related disasters in 2025.</p>
+                </div>
+                <div class="about-image">
+                    <img src="img/logo3.png" alt="QCprotektado Fire Station">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Leadership Section -->
+    <section class="leadership">
+        <div class="container">
+            <h2 class="section-title">Our Leadership</h2>
+            <div class="leadership-grid">
+                <div class="leader-card">
+                    <div class="leader-image">
+                        <img src="img/1.png" alt="Fire Chief">
+                    </div>
+                    <div class="leader-info">
+                        <h3>Chief Solis JR, Zaldy</h3>
+                        <p class="leader-role">Fire Chief</p>
+                        <p>With over 30 years of experience in fire service, Chief Solis leads our department with expertise and dedication in 2025.</p>
+                    </div>
+                </div>
+                <div class="leader-card">
+                    <div class="leader-image">
+                        <img src="img/2.jpg" alt="Deputy Chief">
+                    </div>
+                    <div class="leader-info">
+                        <h3>Deputy Chief Dadang, Smiltzer</h3>
+                        <p class="leader-role">Deputy Chief of Operations</p>
+                        <p>Chief Dadang oversees all emergency response operations and training programs for our personnel in 2025.</p>
+                    </div>
+                </div>
+                <div class="leader-card">
+                    <div class="leader-image">
+                        <img src="img/3.jpg" alt="Prevention Chief">
+                    </div>
+                    <div class="leader-info">
+                        <h3>Chief Linog, Norlika</h3>
+                        <p class="leader-role">Chief of Fire Prevention</p>
+                        <p>Chief Linog leads our fire prevention division, focusing on inspections and community education in 2025.</p>
+                    </div>
+                </div>
+                <div class="leader-card">
+                    <div class="leader-image">
+                        <img src="img/rei.jpg" alt="Rescue Chief">
+                    </div>
+                    <div class="leader-info">
+                        <h3>Chief Rei Naoi</h3>
+                        <p class="leader-role">Chief of Technical Rescue</p>
+                        <p>Chief Naoi commands our specialized rescue teams for complex technical rescue operations in 2025.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats" id="stats">
+        <div class="container">
+            <h2 class="section-title">Our Impact in 2024-2025</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3>2,847</h3>
+                    <p>Emergency Responses</p>
+                </div>
+                <div class="stat-item">
+                    <h3>98.2%</h3>
+                    <p>Response Rate Within Target Time</p>
+                </div>
+                <div class="stat-item">
+                    <h3>15,328</h3>
+                    <p>Building Inspections Completed</p>
+                </div>
+                <div class="stat-item">
+                    <h3>42,156</h3>
+                    <p>Citizens Trained in Fire Safety</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chart Section -->
+    <section class="chart-section">
+        <div class="container">
+            <h2 class="section-title">Emergency Response Trends 2024-2025</h2>
+            <div class="chart-container">
+                <canvas id="responseChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Emergency Section -->
+    <section class="emergency" id="contact">
+        <div class="container">
+            <h2>Emergency Hotline</h2>
+            <p>For fire, rescue, and other emergencies, call our 24/7 hotline</p>
+            <a href="tel:1234567890" class="emergency-btn">Call 911</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>QCprotektado</h3>
+                    <p>Quezon City's Premier Fire & Rescue Service Management. Protecting lives and property since 1995.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#stats">Statistics</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Info</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> P2GP+JVX, Topaz, Novaliches, Quezon City, Metro Manila</p>
+                    <p><i class="fas fa-phone"></i> 0998 431 9585</p>
+                    <p><i class="fas fa-envelope"></i> frsm@qcprotektado.com</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Emergency Numbers</h3>
+                    <p>Fire & Rescue: 911</p>
+                    <p>Medical Emergency: 911</p>
+                    <p>Police: 911</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 QCprotektado Fire & Rescue Service Management. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
+
+    <script>
+        // Loading Screen
+        window.addEventListener('load', function() {
+            const loadingScreen = document.getElementById('loading-screen');
+            setTimeout(function() {
+                loadingScreen.style.opacity = '0';
+                setTimeout(function() {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }, 1500);
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navMenu = document.querySelector('.nav-menu');
+        
+        mobileMenuBtn.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+            mobileMenuBtn.textContent = navMenu.classList.contains('active') ? '✕' : '☰';
+        });
+
+        // Sticky Header
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            const backToTop = document.querySelector('.back-to-top');
+            
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+                backToTop.classList.add('visible');
+            } else {
+                header.classList.remove('scrolled');
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        // Chart.js Implementation
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('responseChart').getContext('2d');
+            const responseChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan 2024', 'Feb 2024', 'Mar 2024', 'Apr 2024', 'May 2024', 'Jun 2024', 'Jul 2024', 'Aug 2024', 'Sep 2024', 'Oct 2024', 'Nov 2024', 'Dec 2024', 'Jan 2025', 'Feb 2025', 'Mar 2025'],
+                    datasets: [{
+                        label: 'Fire Incidents',
+                        data: [185, 172, 190, 205, 198, 220, 240, 235, 210, 195, 180, 175, 168, 160, 155],
+                        borderColor: '#D32F2F',
+                        backgroundColor: 'rgba(211, 47, 47, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }, {
+                        label: 'Rescue Operations',
+                        data: [120, 115, 125, 130, 140, 135, 145, 150, 140, 130, 125, 120, 115, 110, 105],
+                        borderColor: '#FF5722',
+                        backgroundColor: 'rgba(255, 87, 34, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Emergency Responses (2024-2025)',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Incidents'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Smooth Scrolling for Anchor Links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (this.getAttribute('href') === '#') return;
+                
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // Close mobile menu if open
+                    if (navMenu.classList.contains('active')) {
+                        navMenu.classList.remove('active');
+                        mobileMenuBtn.textContent = '☰';
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>

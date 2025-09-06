@@ -1,7 +1,7 @@
 <?php
 // Start session and include database connection
 session_start();
-require_once 'db_connection.php';
+require_once 'config/db_connection.php';
 
 require 'vendor/phpmailer/phpmailer/src/PHPMailer.php';
 require 'vendor/phpmailer/phpmailer/src/SMTP.php';
