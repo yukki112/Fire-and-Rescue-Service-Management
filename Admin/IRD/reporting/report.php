@@ -606,7 +606,7 @@ $is_generated_view = isset($_GET['action']) && $_GET['action'] === 'generated';
                         <i class='bx bx-task'></i>
         <span>Evaluation and Assessment Records</span>
                     </a>
-                    <a href="../..TCR/reporting_and_auditlogs/ral.php" class="sidebar-dropdown-link">
+                    <a href="../../TCR/reporting_and_auditlogs/ral.php" class="sidebar-dropdown-link">
                         <i class='bx bx-file'></i>
         <span>Reporting and Audit Logs</span>
                 </div>

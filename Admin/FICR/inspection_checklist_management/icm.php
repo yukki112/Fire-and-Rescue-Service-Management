@@ -828,36 +828,19 @@ if (isset($_SESSION['error_message'])) {
                     </a>
                 </div>
                 
-                <!-- Emergency Evacuation Planning -->
-                <a class="sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#eepMenu" role="button">
-                    <i class='bx bx-exit'></i>
-                    <span class="text">Emergency Evacuation Planning</span>
-                </a>
-                <div class="sidebar-dropdown collapse" id="eepMenu">
-                    <a href="../evacuation_plan_management/epm.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-map-alt'></i>
-                        <span>Evacuation Plan Management</span>
-                    </a>
-                    <a href="../resource_allocation/resource.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-cube'></i>
-                        <span>Resource Allocation</span>
-                    </a>
-                    <a href="../drill_scheduling/drill.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-calendar-event'></i>
-                        <span>Drill Scheduling</span>
-                    </a>
-                    <a href="../evacuation_effectiveness/effectiveness.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-trending-up'></i>
-                        <span>Evacuation Effectiveness</span>
-                    </a>
-                </div>
+                   <div class="sidebar-section">System</div>
                 
-                <div class="sidebar-section">Account</div>
-                <a href="../../profile.php" class="sidebar-link">
-                    <i class='bx bxs-user-circle'></i>
-                    <span class="text">Profile</span>
+                <a href="../settings/settings.php" class="sidebar-link">
+                    <i class='bx bx-cog'></i>
+                    <span class="text">Settings</span>
                 </a>
-                <a href="../../logout.php" class="sidebar-link">
+                
+                <a href="../help/help.php" class="sidebar-link">
+                    <i class='bx bx-help-circle'></i>
+                    <span class="text">Help & Support</span>
+                </a>
+                
+                <a href="../logout.php" class="sidebar-link">
                     <i class='bx bx-log-out'></i>
                     <span class="text">Logout</span>
                 </a>
