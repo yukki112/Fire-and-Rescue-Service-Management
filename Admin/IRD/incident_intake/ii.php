@@ -769,7 +769,7 @@ unset($_SESSION['new_incident_id']);
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">Incident Typer <span class="text-danger">*</span></label>
+                                                <label class="form-label">Incident Typers <span class="text-danger">*</span></label>
                                                 <select class="form-select" name="incident_type" required id="incident_type">
                                                     <option value="">Select incident type</option>
                                                     <?php foreach ($incident_types as $type): ?>
