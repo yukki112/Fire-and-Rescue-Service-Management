@@ -254,7 +254,7 @@ if (isset($_SESSION['error_message'])) {
             </div>
             
             <div class="sidebar-menu">
-                <div class="sidebar-section">Main Navigations</div>
+                <div class="sidebar-section">Main Navigation</div>
                 
                 <a href="../dashboard.php" class="sidebar-link">
                     <i class='bx bxs-dashboard'></i>
