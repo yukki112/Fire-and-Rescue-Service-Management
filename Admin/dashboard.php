@@ -786,7 +786,7 @@ unset($_SESSION['error_message']);
                 
                 <div class="sidebar-section">System</div>
                 
-                <a href="settings.php" class="sidebar-link <?php echo $active_tab == 'settings' ? 'active' : ''; ?>">
+                <a href="SETTINGS/settings.php" class="sidebar-link <?php echo $active_tab == 'settings' ? 'active' : ''; ?>">
                     <i class='bx bx-cog'></i>
                     <span class="text">Settings</span>
                 </a>
