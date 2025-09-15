@@ -131,7 +131,7 @@ if (isset($_GET['action'])) {
 
 // Fetch all incidents
 try {
-    $query = "SELECT iar.*, CONCAT(u.first_name, ' ', u.last_name) as creator_name 
+    $query = "SELECT piar.*, CONCAT(u.first_name, ' ', u.last_name) as creator_name 
              FROM piar.incident_analysis_reports iar
              LEFT JOIN frsm.users u ON iar.created_by = u.id
              WHERE iar.status != 'archived'
