@@ -500,10 +500,7 @@ unset($_SESSION['error_message']);
                 </a>
             
                 <div class="sidebar-dropdown collapse <?php echo $active_module == 'ird' ? 'show' : ''; ?>" id="irdMenu">
-                    <a href="IRD/dashboard/index.php" class="sidebar-dropdown-link <?php echo $active_submodule == 'ii' ? 'active' : ''; ?>">
-                        <i class='bx bxs-dashboard'></i>
-                        <span>Dashboard</span>
-                    </a>
+                   
                     <a href="IRD/incident_intake/ii.php" class="sidebar-dropdown-link <?php echo $active_submodule == 'ii' ? 'active' : ''; ?>">
                         <i class='bx bx-plus-medical'></i>
                         <span>Incident Intake</span>

@@ -462,10 +462,7 @@ unset($_SESSION['report_type']);
                 </a>
             
                 <div class="sidebar-dropdown collapse" id="irdMenu">
-                    <a href="IRD/dashboard/index.php" class="sidebar-dropdown-link">
-                        <i class='bx bxs-dashboard'></i>
-                        <span>Dashboard</span>
-                    </a>
+                   
                     <a href="../../IRD/incident_intake/ii.php" class="sidebar-dropdown-link">
                         <i class='bx bx-plus-medical'></i>
                         <span>Incident Intake</span>
