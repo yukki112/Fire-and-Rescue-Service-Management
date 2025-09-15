@@ -41,8 +41,8 @@ try {
     // Get barangays for dropdown
     $barangays = $dbManager->fetchAll("ird", "SELECT DISTINCT barangay FROM incidents WHERE barangay IS NOT NULL AND barangay != '' ORDER BY barangay");
     
-    // Get incident types for dropdown
-    $incident_types = $dbManager->fetchAll("ird", "SELECT DISTINCT incident_type FROM incidents WHERE incident_type IS NOT NULL AND incident_type != '' ORDER BY incident_type");
+    // Get incident types for dropdown - using the incident_types table instead
+    $incident_types = $dbManager->fetchAll("ird", "SELECT * FROM incident_types ORDER BY type_name");
     
     // Get available units for AI recommendations
     $available_units = $dbManager->fetchAll("ird", "SELECT * FROM units WHERE status = 'available'");
@@ -312,6 +312,15 @@ unset($_SESSION['new_incident_id']);
             padding: 10px;
             margin-bottom: 8px;
             font-size: 0.9rem;
+        }
+        .optgroup-header {
+            font-weight: bold;
+            font-style: italic;
+            background-color: #f8f9fa;
+            padding: 5px 10px;
+        }
+        .incident-type-option {
+            padding-left: 30px !important;
         }
     </style>
 </head>
@@ -769,22 +778,26 @@ unset($_SESSION['new_incident_id']);
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">Incident Type <span class="text-danger">*</span></label>
+                                                <label class="form-label">Incident Types <span class="text-danger">*</span></label>
                                                 <select class="form-select" name="incident_type" required id="incident_type">
                                                     <option value="">Select incident type</option>
-                                                    <?php foreach ($incident_types as $type): ?>
-                                                        <option value="<?php echo htmlspecialchars($type['incident_type']); ?>">
-                                                            <?php echo htmlspecialchars($type['incident_type']); ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                    <option value="structure-fire">Structure Fire</option>
-                                                    <option value="vehicle-fire">Vehicle Fire</option>
-                                                    <option value="wildfire">Wildfire</option>
-                                                    <option value="medical-emergency">Medical Emergency</option>
-                                                    <option value="rescue-operation">Rescue Operation</option>
-                                                    <option value="hazardous-materials">Hazardous Materials</option>
-                                                    <option value="traffic-accident">Traffic Accident</option>
-                                                    <option value="other">Other</option>
+                                                    <?php
+                                                    // Group incident types by category
+                                                    $categories = [];
+                                                    foreach ($incident_types as $type) {
+                                                        $categories[$type['category']][] = $type;
+                                                    }
+                                                    
+                                                    // Display organized dropdown
+                                                    foreach ($categories as $category => $types) {
+                                                        echo '<optgroup label="' . htmlspecialchars($category) . '">';
+                                                        foreach ($types as $type) {
+                                                            echo '<option value="' . htmlspecialchars($type['type_name']) . '" class="incident-type-option">' . 
+                                                                 htmlspecialchars($type['type_name']) . '</option>';
+                                                        }
+                                                        echo '</optgroup>';
+                                                    }
+                                                    ?>
                                                 </select>
                                             </div>
                                         </div>
@@ -812,12 +825,6 @@ unset($_SESSION['new_incident_id']);
                                                             <?php echo htmlspecialchars($barangay['barangay']); ?>
                                                         </option>
                                                     <?php endforeach; ?>
-                                                    <option value="Commonwealth">Commonwealth</option>
-                                                    <option value="Batasan Hills">Batasan Hills</option>
-                                                    <option value="Payatas">Payatas</option>
-                                                    <option value="Bagong Silangan">Bagong Silangan</option>
-                                                    <option value="Holy Spirit">Holy Spirit</option>
-                                                    <option value="Alicia">Alicia</option>
                                                 </select>
                                             </div>
                                         </div>
