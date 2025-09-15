@@ -349,7 +349,7 @@ if (isset($_SESSION['error_message'])) {
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <img src="img/frsmse.png" alt="QC Logo">
+                <img src="img/frsm1.png" alt="QC Logo">
                 <div class="text">
                     Quezon City<br>
                     <small>Fire & Rescue Service Management</small>

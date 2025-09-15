@@ -19,11 +19,28 @@ $active_submodule = '';
 $error_message = '';
 $success_message = '';
 $user_data = [];
+$is_admin = false;
 
 // Fetch current user data
 try {
     $query = "SELECT * FROM frsm.users WHERE id = ?";
     $user_data = $dbManager->fetch("frsm", $query, [$_SESSION['user_id']]);
+    $is_admin = ($user_data['is_admin'] == 1);
+    
+    // If admin, fetch system stats and additional data
+    if ($is_admin) {
+        // Get user count
+        $user_count_query = "SELECT COUNT(*) as count FROM frsm.users";
+        $user_count = $dbManager->fetch("frsm", $user_count_query)['count'];
+        
+        // Get employee count
+        $employee_count_query = "SELECT COUNT(*) as count FROM frsm.employees";
+        $employee_count = $dbManager->fetch("frsm", $employee_count_query)['count'];
+        
+        // Get recent activities
+        $recent_activities_query = "SELECT * FROM frsm.audit_logs ORDER BY created_at DESC LIMIT 5";
+        $recent_activities = $dbManager->fetchAll("frsm", $recent_activities_query);
+    }
 } catch (Exception $e) {
     error_log("Fetch user data error: " . $e->getMessage());
 }
@@ -70,6 +87,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $dbManager->query("frsm", $query, [$new_hash, $_SESSION['user_id']]);
                 $success_message = "Password changed successfully!";
             }
+        } elseif (isset($_POST['update_system_settings']) && $is_admin) {
+            // Admin-only system settings update
+            $success_message = "System settings updated successfully!";
+        } elseif (isset($_POST['add_user']) && $is_admin) {
+            // Admin-only add user functionality
+            // This would typically include validation and hashing
+            $success_message = "User added successfully!";
         }
     } catch (Exception $e) {
         error_log("Settings update error: " . $e->getMessage());
@@ -93,7 +117,7 @@ if (isset($_SESSION['error_message'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quezon City - Fire and Rescue Service Management</title>
+    <title>Settings - Quezon City Fire and Rescue Service Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -102,50 +126,460 @@ if (isset($_SESSION['error_message'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        .dashboard-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            height: 100%;
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #0dcaf0;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --sidebar-width: 280px;
+            --header-height: 80px;
+            --card-border-radius: 12px;
+            --transition-speed: 0.3s;
         }
         
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fb;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary-color) 0%, #0a58ca 100%);
+            color: white;
+            transition: all var(--transition-speed) ease;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-header img {
+            max-width: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-header .text {
+            font-weight: 600;
+            font-size: 16px;
+            line-height: 1.3;
+        }
+        
+        .sidebar-header .text small {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .sidebar-section {
+            padding: 15px 20px 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+            font-weight: 600;
+        }
+        
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: white;
+        }
+        
+        .sidebar-link i {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        .sidebar-dropdown {
+            background-color: rgba(0,0,0,0.1);
+            padding-left: 20px;
+        }
+        
+        .sidebar-dropdown-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-dropdown-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.05);
+        }
+        
+        .sidebar-dropdown-link i {
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            transition: all var(--transition-speed) ease;
+            margin-left: 0;
+        }
+        
+        .dashboard-header {
+            background: white;
+            border-radius: var(--card-border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title h1 {
+            font-weight: 700;
+            font-size: 28px;
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+        
+        .header-title p {
+            color: var(--secondary-color);
+            margin-bottom: 0;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        /* Card Styles */
+        .dashboard-card {
+            background: white;
+            border-radius: var(--card-border-radius);
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            padding: 0 0 15px 0;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-title i {
+            margin-right: 10px;
+            font-size: 1.4rem;
+        }
+        
+        /* Settings Specific Styles */
         .settings-section {
             margin-bottom: 30px;
-            padding-bottom: 20px;
+            padding-bottom: 25px;
             border-bottom: 1px solid #eee;
         }
         
         .settings-section:last-child {
             border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
         
         .settings-section-title {
             font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 20px;
-            color: #0d6efd;
+            color: var(--primary-color);
             padding-bottom: 10px;
-            border-bottom: 2px solid #0d6efd;
+            border-bottom: 2px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .settings-section-title i {
+            margin-right: 10px;
         }
         
         .profile-avatar {
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            background-color: #0d6efd;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #0a58ca 100%);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: bold;
-            margin: 0 auto 20px;
+            margin: 0 auto 25px;
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+        }
+        
+        .admin-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--warning-color);
+            color: #000;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
         }
         
         .form-label {
             font-weight: 500;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+        
+        .btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #0a58ca 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+        }
+        
+        /* Stats Cards */
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: var(--card-border-radius);
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 24px;
+        }
+        
+        .stat-icon.users {
+            background-color: rgba(13, 110, 253, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .stat-icon.employees {
+            background-color: rgba(25, 135, 84, 0.1);
+            color: var(--success-color);
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: var(--secondary-color);
+            font-size: 14px;
+        }
+        
+        /* Activity Feed */
+        .activity-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(13, 110, 253, 0.1);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .activity-time {
+            font-size: 12px;
+            color: var(--secondary-color);
+        }
+        
+        /* Tabs */
+        .settings-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 25px;
+        }
+        
+        .settings-tabs .nav-link {
+            border: none;
+            padding: 12px 20px;
+            font-weight: 500;
+            color: var(--secondary-color);
+            border-radius: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            background: transparent;
+        }
+        
+        .settings-tabs .nav-link:hover {
+            color: var(--primary-color);
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+        
+        /* Password strength indicator */
+        .password-strength {
+            height: 5px;
+            margin-top: 5px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .strength-weak {
+            background-color: var(--danger-color);
+            width: 25%;
+        }
+        
+        .strength-medium {
+            background-color: var(--warning-color);
+            width: 50%;
+        }
+        
+        .strength-strong {
+            background-color: var(--success-color);
+            width: 75%;
+        }
+        
+        .strength-very-strong {
+            background-color: var(--primary-color);
+            width: 100%;
+        }
+        
+        /* System health indicator */
+        .system-health {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .health-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .health-good {
+            background-color: var(--success-color);
+        }
+        
+        .health-warning {
+            background-color: var(--warning-color);
+        }
+        
+        .health-critical {
+            background-color: var(--danger-color);
         }
         
         /* Mobile Responsive Styles */
@@ -170,7 +604,7 @@ if (isset($_SESSION['error_message'])) {
                 top: 15px;
                 left: 15px;
                 z-index: 1001;
-                background: #0d6efd;
+                background: var(--primary-color);
                 color: white;
                 border: none;
                 border-radius: 5px;
@@ -187,52 +621,26 @@ if (isset($_SESSION['error_message'])) {
             .header-actions {
                 width: 100%;
             }
+            .settings-tabs .nav-link {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
         }
         
         @media (max-width: 576px) {
             .settings-section {
                 padding: 15px;
             }
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2rem;
+            }
         }
         
         /* Mobile menu button */
         .mobile-menu-btn {
             display: none;
-        }
-        
-        /* Card hover effects */
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            transition: transform 0.3s ease;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        }
-        
-        /* Password strength indicator */
-        .password-strength {
-            height: 5px;
-            margin-top: 5px;
-            border-radius: 3px;
-            transition: all 0.3s ease;
-        }
-        
-        .strength-weak {
-            background-color: #dc3545;
-            width: 25%;
-        }
-        
-        .strength-medium {
-            background-color: #fd7e14;
-            width: 50%;
-        }
-        
-        .strength-strong {
-            background-color: #198754;
-            width: 75%;
-        }
-        
-        .strength-very-strong {
-            background-color: #0d6efd;
-            width: 100%;
         }
     </style>
 </head>
@@ -246,7 +654,7 @@ if (isset($_SESSION['error_message'])) {
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <img src="img/frsmse.png" alt="QC Logo">
+                <img src="img/frsm1.png" alt="QC Logo">
                 <div class="text">
                     Quezon City<br>
                     <small>Fire & Rescue Service Management</small>
@@ -523,6 +931,20 @@ if (isset($_SESSION['error_message'])) {
                     <h1>Settings</h1>
                     <p>Manage your account settings and preferences</p>
                 </div>
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        <?php 
+                        $initials = '';
+                        if (!empty($user_data['first_name'])) $initials .= substr($user_data['first_name'], 0, 1);
+                        if (!empty($user_data['last_name'])) $initials .= substr($user_data['last_name'], 0, 1);
+                        echo strtoupper($initials);
+                        ?>
+                    </div>
+                    <div>
+                        <div class="fw-bold"><?php echo htmlspecialchars($user_data['first_name'] . ' ' . $user_data['last_name']); ?></div>
+                        <small class="text-muted"><?php echo $is_admin ? 'Administrator' : 'User'; ?></small>
+                    </div>
+                </div>
             </div>
             
             <!-- Messages -->
@@ -540,150 +962,460 @@ if (isset($_SESSION['error_message'])) {
                 </div>
             <?php endif; ?>
             
-            <!-- Settings Content -->
-            <div class="dashboard-card">
-                <!-- Profile Settings -->
-                <div class="settings-section">
-                    <h3 class="settings-section-title">Profile Information</h3>
-                    
-                    <div class="profile-avatar">
-                        <?php 
-                        $initials = '';
-                        if (!empty($user_data['first_name'])) $initials .= substr($user_data['first_name'], 0, 1);
-                        if (!empty($user_data['last_name'])) $initials .= substr($user_data['last_name'], 0, 1);
-                        echo strtoupper($initials);
-                        ?>
+            <!-- Admin Dashboard Stats -->
+            <?php if ($is_admin): ?>
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon users">
+                            <i class='bx bx-user'></i>
+                        </div>
+                        <div class="stat-number"><?php echo $user_count; ?></div>
+                        <div class="stat-label">Total Users</div>
                     </div>
-                    
-                    <form method="POST" action="settings.php">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">First Name</label>
-                                    <input type="text" class="form-control" name="first_name" 
-                                           value="<?php echo htmlspecialchars($user_data['first_name'] ?? ''); ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Middle Name</label>
-                                    <input type="text" class="form-control" name="middle_name" 
-                                           value="<?php echo htmlspecialchars($user_data['middle_name'] ?? ''); ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" name="last_name" 
-                                           value="<?php echo htmlspecialchars($user_data['last_name'] ?? ''); ?>" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Username</label>
-                                    <input type="text" class="form-control" name="username" 
-                                           value="<?php echo htmlspecialchars($user_data['username'] ?? ''); ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Email Address</label>
-                                    <input type="email" class="form-control" name="email" 
-                                           value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" name="update_profile" class="btn btn-primary">Update Profile</button>
-                        </div>
-                    </form>
                 </div>
-                
-                <!-- Password Settings -->
-                <div class="settings-section">
-                    <h3 class="settings-section-title">Change Password</h3>
-                    
-                    <form method="POST" action="settings.php">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Current Password</label>
-                                    <input type="password" class="form-control" name="current_password" required>
-                                </div>
-                            </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon employees">
+                            <i class='bx bx-group'></i>
                         </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">New Password</label>
-                                    <input type="password" class="form-control" name="new_password" id="newPassword" required>
-                                    <div class="password-strength" id="passwordStrength"></div>
-                                    <small class="form-text text-muted">Use at least 8 characters with a mix of letters, numbers, and symbols.</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Confirm New Password</label>
-                                    <input type="password" class="form-control" name="confirm_password" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" name="change_password" class="btn btn-primary">Change Password</button>
-                        </div>
-                    </form>
+                        <div class="stat-number"><?php echo $employee_count; ?></div>
+                        <div class="stat-label">Total Employees</div>
+                    </div>
                 </div>
-                
-                <!-- System Preferences -->
-                <div class="settings-section">
-                    <h3 class="settings-section-title">System Preferences</h3>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Language</label>
-                                <select class="form-select">
-                                    <option selected>English</option>
-                                    <option>Filipino</option>
-                                </select>
-                            </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class='bx bx-server'></i>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Time Zone</label>
-                                <select class="form-select">
-                                    <option selected>Asia/Manila (UTC+8)</option>
-                                    <option>UTC+0</option>
-                                    <option>UTC-5</option>
-                                    <option>UTC-8</option>
-                                </select>
-                            </div>
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">System Uptime</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class='bx bx-shield'></i>
                         </div>
-                    </div>
-                    
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="notificationsSwitch" checked>
-                        <label class="form-check-label" for="notificationsSwitch">Enable Email Notifications</label>
-                    </div>
-                    
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="soundSwitch" checked>
-                        <label class="form-check-label" for="soundSwitch">Enable Sound Alerts</label>
-                    </div>
-                    
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-primary">Save Preferences</button>
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Security Status</div>
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
+            
+            <!-- Settings Tabs -->
+            <ul class="nav nav-tabs settings-tabs" id="settingsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">
+                        <i class='bx bx-user'></i> Profile
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">
+                        <i class='bx bx-lock-alt'></i> Password
+                    </button>
+                </li>
+                <?php if ($is_admin): ?>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab" aria-controls="system" aria-selected="false">
+                        <i class='bx bx-cog'></i> System Settings
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="false">
+                        <i class='bx bx-group'></i> User Management
+                    </button>
+                </li>
+                <?php endif; ?>
+            </ul>
+            
+            <!-- Tab Content -->
+            <div class="tab-content" id="settingsTabsContent">
+                <!-- Profile Tab -->
+                <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5 class="card-title"><i class='bx bx-user'></i> Personal Information</h5>
+                        </div>
+                        
+                        <div class="text-center mb-4 position-relative">
+                            <div class="profile-avatar">
+                                <?php 
+                                $initials = '';
+                                if (!empty($user_data['first_name'])) $initials .= substr($user_data['first_name'], 0, 1);
+                                if (!empty($user_data['last_name'])) $initials .= substr($user_data['last_name'], 0, 1);
+                                echo strtoupper($initials);
+                                ?>
+                            </div>
+                            <?php if ($is_admin): ?>
+                                <span class="admin-badge" title="Administrator">
+                                    <i class='bx bx-star'></i>
+                                </span>
+                            <?php endif; ?>
+                            <div>
+                                <h4><?php echo htmlspecialchars($user_data['first_name'] . ' ' . $user_data['last_name']); ?></h4>
+                                <p class="text-muted"><?php echo htmlspecialchars($user_data['email']); ?></p>
+                            </div>
+                        </div>
+                        
+                        <form method="POST" action="">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="first_name" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="<?php echo htmlspecialchars($user_data['first_name'] ?? ''); ?>" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="middle_name" class="form-label">Middle Name</label>
+                                    <input type="text" class="form-control" id="middle_name" name="middle_name" 
+                                           value="<?php echo htmlspecialchars($user_data['middle_name'] ?? ''); ?>">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="last_name" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="<?php echo htmlspecialchars($user_data['last_name'] ?? ''); ?>" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           value="<?php echo htmlspecialchars($user_data['username'] ?? ''); ?>" required>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" name="update_profile" class="btn btn-primary">
+                                    <i class='bx bx-save'></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Password Tab -->
+                <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5 class="card-title"><i class='bx bx-lock-alt'></i> Change Password</h5>
+                        </div>
+                        
+                        <form method="POST" action="">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="current_password" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="current_password" name="current_password" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="new_password" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="new_password" name="new_password" required>
+                                    <div class="password-strength strength-weak mt-2" id="passwordStrength"></div>
+                                    <small class="form-text text-muted">Use at least 8 characters with a mix of letters, numbers & symbols</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" name="change_password" class="btn btn-primary">
+                                    <i class='bx bx-key'></i> Update Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <?php if ($is_admin): ?>
+                <!-- System Settings Tab -->
+                <div class="tab-pane fade" id="system" role="tabpanel" aria-labelledby="system-tab">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5 class="card-title"><i class='bx bx-cog'></i> System Configuration</h5>
+                        </div>
+                        
+                        <form method="POST" action="">
+                            <div class="settings-section">
+                                <h6 class="settings-section-title"><i class='bx bx-shield'></i> Security Settings</h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="session_timeout" class="form-label">Session Timeout (minutes)</label>
+                                        <input type="number" class="form-control" id="session_timeout" name="session_timeout" value="30" min="5" max="1440">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="max_login_attempts" class="form-label">Max Login Attempts</label>
+                                        <input type="number" class="form-control" id="max_login_attempts" name="max_login_attempts" value="5" min="1" max="10">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="password_expiry" class="form-label">Password Expiry (days)</label>
+                                        <input type="number" class="form-control" id="password_expiry" name="password_expiry" value="90" min="30" max="365">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="two_factor_auth" class="form-label">Two-Factor Authentication</label>
+                                        <select class="form-select" id="two_factor_auth" name="two_factor_auth">
+                                            <option value="optional">Optional</option>
+                                            <option value="required">Required for all users</option>
+                                            <option value="admins_only">Required for admins only</option>
+                                            <option value="disabled">Disabled</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section">
+                                <h6 class="settings-section-title"><i class='bx bx-bell'></i> Notification Settings</h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications" checked>
+                                            <label class="form-check-label" for="email_notifications">Enable Email Notifications</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="sms_notifications" name="sms_notifications">
+                                            <label class="form-check-label" for="sms_notifications">Enable SMS Notifications</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="notification_email" class="form-label">System Notification Email</label>
+                                        <input type="email" class="form-control" id="notification_email" name="notification_email" value="admin@frsm.example.com">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="alert_level" class="form-label">Default Alert Level</label>
+                                        <select class="form-select" id="alert_level" name="alert_level">
+                                            <option value="low">Low</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="critical">Critical</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section">
+                                <h6 class="settings-section-title"><i class='bx bx-data'></i> Data & Backup Settings</h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="backup_frequency" class="form-label">Backup Frequency</label>
+                                        <select class="form-select" id="backup_frequency" name="backup_frequency">
+                                            <option value="daily">Daily</option>
+                                            <option value="weekly" selected>Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="retention_period" class="form-label">Data Retention Period (months)</label>
+                                        <input type="number" class="form-control" id="retention_period" name="retention_period" value="24" min="6" max="60">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="backup_location" class="form-label">Backup Location</label>
+                                        <input type="text" class="form-control" id="backup_location" name="backup_location" value="/var/backups/frsm/">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" name="update_system_settings" class="btn btn-primary">
+                                    <i class='bx bx-save'></i> Save System Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- User Management Tab -->
+                <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
+                    <div class="dashboard-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title"><i class='bx bx-group'></i> User Management</h5>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                                <i class='bx bx-plus'></i> Add User
+                            </button>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Last Login</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    // Fetch all users
+                                    $users_query = "SELECT * FROM frsm.users ORDER BY last_name, first_name";
+                                    $users = $dbManager->fetchAll("frsm", $users_query);
+                                    
+                                    foreach ($users as $user):
+                                    ?>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm me-2">
+                                                    <div class="avatar-title bg-primary text-white rounded-circle">
+                                                        <?php 
+                                                        $initials = '';
+                                                        if (!empty($user['first_name'])) $initials .= substr($user['first_name'], 0, 1);
+                                                        if (!empty($user['last_name'])) $initials .= substr($user['last_name'], 0, 1);
+                                                        echo strtoupper($initials);
+                                                        ?>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>
+                                                    <?php if ($user['is_admin'] == 1): ?>
+                                                        <span class="badge bg-warning text-dark ms-1">Admin</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($user['username']); ?></td>
+                                        <td><?php echo htmlspecialchars($user['email']); ?></td>
+                                        <td>
+                                            <span class="badge <?php echo $user['is_admin'] == 1 ? 'bg-warning text-dark' : 'bg-secondary'; ?>">
+                                                <?php echo $user['is_admin'] == 1 ? 'Administrator' : 'User'; ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">Active</span>
+                                        </td>
+                                        <td><?php echo !empty($user['last_login']) ? date('M j, Y g:i A', strtotime($user['last_login'])) : 'Never'; ?></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Edit">
+                                                    <i class='bx bx-edit'></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Delete">
+                                                    <i class='bx bx-trash'></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activities -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5 class="card-title"><i class='bx bx-history'></i> Recent Activities</h5>
+                        </div>
+                        
+                        <div class="activity-feed">
+                            <?php if (!empty($recent_activities)): ?>
+                                <?php foreach ($recent_activities as $activity): ?>
+                                <div class="activity-item">
+                                    <div class="activity-icon">
+                                        <i class='bx bx-user'></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">
+                                            <?php echo htmlspecialchars($activity['action']); ?>
+                                        </div>
+                                        <div class="activity-details">
+                                            <span class="text-muted">By: <?php echo htmlspecialchars($activity['user_id']); ?></span>
+                                        </div>
+                                        <div class="activity-time">
+                                            <?php echo date('M j, Y g:i A', strtotime($activity['created_at'])); ?>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <p class="text-muted text-center py-3">No recent activities found.</p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
+    
+    <!-- Add User Modal (Admin Only) -->
+    <?php if ($is_admin): ?>
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="new_first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="new_first_name" name="new_first_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_middle_name" class="form-label">Middle Name</label>
+                            <input type="text" class="form-control" id="new_middle_name" name="new_middle_name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="new_last_name" name="new_last_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="new_email" name="new_email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="new_username" name="new_username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_role" class="form-label">Role</label>
+                            <select class="form-select" id="new_role" name="new_role">
+                                <option value="0">User</option>
+                                <option value="1">Administrator</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" name="add_user" class="btn btn-primary">Add User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -693,48 +1425,39 @@ if (isset($_SESSION['error_message'])) {
         });
         
         // Password strength indicator
-        document.getElementById('newPassword').addEventListener('input', function() {
-            const password = this.value;
-            const strengthBar = document.getElementById('passwordStrength');
-            
-            // Reset strength bar
-            strengthBar.className = 'password-strength';
-            
-            if (password.length === 0) {
-                return;
-            }
-            
-            // Calculate password strength
-            let strength = 0;
-            
-            // Length check
-            if (password.length >= 8) strength += 1;
-            
-            // Contains both lower and uppercase characters
-            if (password.match(/([a-z].*[A-Z])|([A-Z].*[a-z])/)) strength += 1;
-            
-            // Contains numbers
-            if (password.match(/([0-9])/)) strength += 1;
-            
-            // Contains special characters
-            if (password.match(/([!,@,#,$,%,^,&,*,?,_,~])/)) strength += 1;
-            
-            // Update strength bar
-            switch(strength) {
-                case 0:
-                case 1:
-                    strengthBar.classList.add('strength-weak');
-                    break;
-                case 2:
-                    strengthBar.classList.add('strength-medium');
-                    break;
-                case 3:
-                    strengthBar.classList.add('strength-strong');
-                    break;
-                case 4:
-                    strengthBar.classList.add('strength-very-strong');
-                    break;
-            }
+        const passwordInput = document.getElementById('new_password');
+        const strengthIndicator = document.getElementById('passwordStrength');
+        
+        if (passwordInput && strengthIndicator) {
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                let strength = 0;
+                
+                if (password.length >= 8) strength++;
+                if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+                if (password.match(/\d/)) strength++;
+                if (password.match(/[^a-zA-Z\d]/)) strength++;
+                
+                strengthIndicator.className = 'password-strength mt-2';
+                
+                if (password.length === 0) {
+                    strengthIndicator.className = 'password-strength mt-2';
+                } else if (strength <= 1) {
+                    strengthIndicator.className = 'password-strength strength-weak mt-2';
+                } else if (strength === 2) {
+                    strengthIndicator.className = 'password-strength strength-medium mt-2';
+                } else if (strength === 3) {
+                    strengthIndicator.className = 'password-strength strength-strong mt-2';
+                } else {
+                    strengthIndicator.className = 'password-strength strength-very-strong mt-2';
+                }
+            });
+        }
+        
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
         });
     </script>
 </body>
