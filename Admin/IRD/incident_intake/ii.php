@@ -777,12 +777,14 @@ unset($_SESSION['new_incident_id']);
                                                             <?php echo htmlspecialchars($type['incident_type']); ?>
                                                         </option>
                                                     <?php endforeach; ?>
-                                                    <option value="Fire">Fire</option>
-                                                    <option value="Medical Emergency">Medical Emergency</option>
-                                                    <option value="Rescue">Rescue</option>
-                                                    <option value="Hazardous Materials">Hazardous Materials</option>
-                                                    <option value="Traffic Accident">Traffic Accident</option>
-                                                    <option value="Other">Other</option>
+                                                    <option value="structure-fire">Structure Fire</option>
+                                                    <option value="vehicle-fire">Vehicle Fire</option>
+                                                    <option value="wildfire">Wildfire</option>
+                                                    <option value="medical-emergency">Medical Emergency</option>
+                                                    <option value="rescue-operation">Rescue Operation</option>
+                                                    <option value="hazardous-materials">Hazardous Materials</option>
+                                                    <option value="traffic-accident">Traffic Accident</option>
+                                                    <option value="other">Other</option>
                                                 </select>
                                             </div>
                                         </div>
