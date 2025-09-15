@@ -1166,7 +1166,7 @@ unset($_SESSION['error_message']);
                                     <span class="stat-label">Maintenance Due</span>
                                 </div>
                             </div>
-                            <a href="FSIET/inventory_mangement/im.php" class="btn btn-sm btn-outline-info mt-2">Manage</a>
+                            <a href="FSIET/inventory_management/im.php" class="btn btn-sm btn-outline-info mt-2">Manage</a>
                         </div>
                     </div>
                     
@@ -1241,7 +1241,7 @@ unset($_SESSION['error_message']);
                                     <span class="stat-label">Total Courses</span>
                                 </div>
                             </div>
-                            <a href="TCR/personel_training_profile/ptr.php" class="btn btn-sm btn-outline-success mt-2">View</a>
+                            <a href="TCR/personnel_training_profile/ptr.php" class="btn btn-sm btn-outline-success mt-2">View</a>
                         </div>
                     </div>
                     
@@ -1266,7 +1266,7 @@ unset($_SESSION['error_message']);
                                     <span class="stat-label">Establishments</span>
                                 </div>
                             </div>
-                            <a href="FICR/restablishment_registry/er.php" class="btn btn-sm btn-outline-purple mt-2">Schedule</a>
+                            <a href="FICR/establishment_registry/er.php" class="btn btn-sm btn-outline-purple mt-2">Schedule</a>
                         </div>
                     </div>
                     
