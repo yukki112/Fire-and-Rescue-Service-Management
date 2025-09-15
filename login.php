@@ -307,7 +307,7 @@ if (empty($_SESSION['user_id']) && isset($_COOKIE['remember_me'])) {
             if ($user['is_admin']) {
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['user_type'] = 'admin';
-                header("Location: IRD/index.php");
+                header("Location: Admin/dashboard.php");
                 exit();
             } else {
                 $_SESSION['community_logged_in'] = true;
