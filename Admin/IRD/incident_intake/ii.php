@@ -381,7 +381,7 @@ unset($_SESSION['new_incident_id']);
                         <i class='bx bx-package'></i>
                         <span>Inventory Management</span>
                     </a>
-                    <a href="../../FSIET/equipment_tracking/et.php" class="sidebar-dropdown-link">
+                    <a href="../../FSIET/equipment_location_tracking/elt.php" class="sidebar-dropdown-link">
                         <i class='bx bx-wrench'></i>
                         <span>Equipment Location Tracking</span>
                     </a>
