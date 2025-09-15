@@ -10,6 +10,16 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Check if user is admin
+$is_admin = false;
+try {
+    $query = "SELECT is_admin FROM frsm.users WHERE id = ?";
+    $user_data = $dbManager->fetch("frsm", $query, [$_SESSION['user_id']]);
+    $is_admin = ($user_data['is_admin'] == 1);
+} catch (Exception $e) {
+    error_log("Fetch user admin status error: " . $e->getMessage());
+}
+
 // Set active tab and module for sidebar highlighting
 $active_tab = 'system';
 $active_module = 'settings';
@@ -70,6 +80,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $dbManager->query("frsm", $query, [$new_hash, $_SESSION['user_id']]);
                 $success_message = "Password changed successfully!";
             }
+        } elseif (isset($_POST['update_preferences'])) {
+            // Update System Preferences
+            $query = "UPDATE frsm.users SET preferences = ? WHERE id = ?";
+            $preferences = json_encode([
+                'language' => $_POST['language'],
+                'timezone' => $_POST['timezone'],
+                'email_notifications' => isset($_POST['email_notifications']) ? 1 : 0,
+                'sound_alerts' => isset($_POST['sound_alerts']) ? 1 : 0
+            ]);
+            
+            $dbManager->query("frsm", $query, [$preferences, $_SESSION['user_id']]);
+            $success_message = "Preferences updated successfully!";
+        } elseif (isset($_POST['upload_avatar']) && !empty($_FILES['avatar']['name'])) {
+            // Handle avatar upload
+            $target_dir = "uploads/avatars/";
+            if (!file_exists($target_dir)) {
+                mkdir($target_dir, 0777, true);
+            }
+            
+            $imageFileType = strtolower(pathinfo($_FILES["avatar"]["name"], PATHINFO_EXTENSION));
+            $target_file = $target_dir . "user_" . $_SESSION['user_id'] . "." . $imageFileType;
+            
+            // Check if image file is an actual image
+            $check = getimagesize($_FILES["avatar"]["tmp_name"]);
+            if ($check === false) {
+                $error_message = "File is not an image.";
+            } elseif ($_FILES["avatar"]["size"] > 500000) {
+                $error_message = "Sorry, your file is too large.";
+            } elseif (!in_array($imageFileType, ["jpg", "png", "jpeg", "gif"])) {
+                $error_message = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+            } else {
+                if (move_uploaded_file($_FILES["avatar"]["tmp_name"], $target_file)) {
+                    // Update user record with avatar path
+                    $query = "UPDATE frsm.users SET avatar_path = ? WHERE id = ?";
+                    $dbManager->query("frsm", $query, [$target_file, $_SESSION['user_id']]);
+                    $success_message = "Avatar updated successfully!";
+                    
+                    // Refresh user data
+                    $query = "SELECT * FROM frsm.users WHERE id = ?";
+                    $user_data = $dbManager->fetch("frsm", $query, [$_SESSION['user_id']]);
+                } else {
+                    $error_message = "Sorry, there was an error uploading your file.";
+                }
+            }
         }
     } catch (Exception $e) {
         error_log("Settings update error: " . $e->getMessage());
@@ -86,6 +140,58 @@ if (isset($_SESSION['success_message'])) {
 if (isset($_SESSION['error_message'])) {
     $error_message = $_SESSION['error_message'];
     unset($_SESSION['error_message']);
+}
+
+// Get user preferences
+$preferences = [
+    'language' => 'English',
+    'timezone' => 'Asia/Manila (UTC+8)',
+    'email_notifications' => 1,
+    'sound_alerts' => 1
+];
+
+try {
+    $query = "SELECT preferences FROM frsm.users WHERE id = ?";
+    $prefs_data = $dbManager->fetch("frsm", $query, [$_SESSION['user_id']]);
+    if (!empty($prefs_data['preferences'])) {
+        $user_prefs = json_decode($prefs_data['preferences'], true);
+        if ($user_prefs) {
+            $preferences = array_merge($preferences, $user_prefs);
+        }
+    }
+} catch (Exception $e) {
+    error_log("Fetch preferences error: " . $e->getMessage());
+}
+
+// Get system statistics for admin
+$system_stats = [];
+if ($is_admin) {
+    try {
+        // User count
+        $query = "SELECT COUNT(*) as count FROM frsm.users";
+        $user_count = $dbManager->fetch("frsm", $query)['count'];
+        
+        // Employee count
+        $query = "SELECT COUNT(*) as count FROM frsm.employees";
+        $employee_count = $dbManager->fetch("frsm", $query)['count'];
+        
+        // Active sessions
+        $query = "SELECT COUNT(*) as count FROM frsm.auth_tokens WHERE expires_at > NOW()";
+        $active_sessions = $dbManager->fetch("frsm", $query)['count'];
+        
+        // Recent activities
+        $query = "SELECT COUNT(*) as count FROM frsm.audit_logs WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+        $recent_activities = $dbManager->fetch("frsm", $query)['count'];
+        
+        $system_stats = [
+            'users' => $user_count,
+            'employees' => $employee_count,
+            'sessions' => $active_sessions,
+            'activities' => $recent_activities
+        ];
+    } catch (Exception $e) {
+        error_log("Fetch system stats error: " . $e->getMessage());
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -142,10 +248,75 @@ if (isset($_SESSION['error_message'])) {
             font-size: 3rem;
             font-weight: bold;
             margin: 0 auto 20px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .profile-avatar .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .profile-avatar:hover .avatar-overlay {
+            opacity: 1;
+        }
+        
+        .avatar-overlay i {
+            color: white;
+            font-size: 1.5rem;
         }
         
         .form-label {
             font-weight: 500;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .stats-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stats-card .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .admin-section {
+            background: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .admin-section h5 {
+            color: #0d6efd;
+            margin-bottom: 15px;
         }
         
         /* Mobile Responsive Styles */
@@ -234,6 +405,17 @@ if (isset($_SESSION['error_message'])) {
             background-color: #0d6efd;
             width: 100%;
         }
+        
+        .nav-tabs .nav-link {
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            font-weight: 600;
+            border-bottom: 3px solid #0d6efd;
+        }
     </style>
 </head>
 <body>
@@ -256,7 +438,7 @@ if (isset($_SESSION['error_message'])) {
             <div class="sidebar-menu">
                 <div class="sidebar-section">Main Navigation</div>
                 
-                <a href="../dashboard.php" class="sidebar-link">
+                <a href="../../dashboard.php" class="sidebar-link">
                     <i class='bx bxs-dashboard'></i>
                     <span class="text">Dashboard</span>
                 </a>
@@ -523,6 +705,9 @@ if (isset($_SESSION['error_message'])) {
                     <h1>Settings</h1>
                     <p>Manage your account settings and preferences</p>
                 </div>
+                <?php if ($is_admin): ?>
+                <div class="badge bg-danger">Administrator</div>
+                <?php endif; ?>
             </div>
             
             <!-- Messages -->
@@ -540,146 +725,311 @@ if (isset($_SESSION['error_message'])) {
                 </div>
             <?php endif; ?>
             
+            <!-- Admin Dashboard Section -->
+            <?php if ($is_admin): ?>
+            <div class="dashboard-card">
+                <h3 class="settings-section-title">Administrator Dashboard</h3>
+                
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="number"><?php echo $system_stats['users'] ?? 0; ?></div>
+                            <div class="label">System Users</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="number"><?php echo $system_stats['employees'] ?? 0; ?></div>
+                            <div class="label">Employees</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="number"><?php echo $system_stats['sessions'] ?? 0; ?></div>
+                            <div class="label">Active Sessions</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="number"><?php echo $system_stats['activities'] ?? 0; ?></div>
+                            <div class="label">Recent Activities</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="admin-section">
+                    <h5>Quick Actions</h5>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="user_management.php" class="btn btn-outline-primary">Manage Users</a>
+                        <a href="system_logs.php" class="btn btn-outline-primary">View System Logs</a>
+                        <a href="backup_restore.php" class="btn btn-outline-primary">Backup & Restore</a>
+                        <a href="system_config.php" class="btn btn-outline-primary">System Configuration</a>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+            
             <!-- Settings Content -->
             <div class="dashboard-card">
-                <!-- Profile Settings -->
-                <div class="settings-section">
-                    <h3 class="settings-section-title">Profile Information</h3>
-                    
-                    <div class="profile-avatar">
-                        <?php 
-                        $initials = '';
-                        if (!empty($user_data['first_name'])) $initials .= substr($user_data['first_name'], 0, 1);
-                        if (!empty($user_data['last_name'])) $initials .= substr($user_data['last_name'], 0, 1);
-                        echo strtoupper($initials);
-                        ?>
+                <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">Profile</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab">Password</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="preferences-tab" data-bs-toggle="tab" data-bs-target="#preferences" type="button" role="tab">Preferences</button>
+                    </li>
+                    <?php if ($is_admin): ?>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab">Admin</button>
+                    </li>
+                    <?php endif; ?>
+                </ul>
+                
+                <div class="tab-content" id="settingsTabsContent">
+                    <!-- Profile Tab -->
+                    <div class="tab-pane fade show active" id="profile" role="tabpanel">
+                        <div class="settings-section">
+                            <h3 class="settings-section-title">Profile Information</h3>
+                            
+                            <div class="text-center mb-4">
+                                <div class="profile-avatar" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                                    <?php if (!empty($user_data['avatar_path'])): ?>
+                                        <img src="<?php echo $user_data['avatar_path']; ?>" alt="Profile Avatar">
+                                    <?php else: ?>
+                                        <?php 
+                                        $initials = '';
+                                        if (!empty($user_data['first_name'])) $initials .= substr($user_data['first_name'], 0, 1);
+                                        if (!empty($user_data['last_name'])) $initials .= substr($user_data['last_name'], 0, 1);
+                                        echo strtoupper($initials);
+                                        ?>
+                                    <?php endif; ?>
+                                    <div class="avatar-overlay">
+                                        <i class='bx bx-camera'></i>
+                                    </div>
+                                </div>
+                                <p class="text-muted">Click on avatar to change</p>
+                            </div>
+                            
+                            <form method="POST" action="settings.php">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">First Name</label>
+                                            <input type="text" class="form-control" name="first_name" 
+                                                   value="<?php echo htmlspecialchars($user_data['first_name'] ?? ''); ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Middle Name</label>
+                                            <input type="text" class="form-control" name="middle_name" 
+                                                   value="<?php echo htmlspecialchars($user_data['middle_name'] ?? ''); ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Last Name</label>
+                                            <input type="text" class="form-control" name="last_name" 
+                                                   value="<?php echo htmlspecialchars($user_data['last_name'] ?? ''); ?>" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Username</label>
+                                            <input type="text" class="form-control" name="username" 
+                                                   value="<?php echo htmlspecialchars($user_data['username'] ?? ''); ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Email Address</label>
+                                            <input type="email" class="form-control" name="email" 
+                                                   value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" name="update_profile" class="btn btn-primary">Update Profile</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                     
-                    <form method="POST" action="settings.php">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">First Name</label>
-                                    <input type="text" class="form-control" name="first_name" 
-                                           value="<?php echo htmlspecialchars($user_data['first_name'] ?? ''); ?>" required>
+                    <!-- Password Tab -->
+                    <div class="tab-pane fade" id="password" role="tabpanel">
+                        <div class="settings-section">
+                            <h3 class="settings-section-title">Change Password</h3>
+                            
+                            <form method="POST" action="settings.php">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Current Password</label>
+                                            <input type="password" class="form-control" name="current_password" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">New Password</label>
+                                            <input type="password" class="form-control" name="new_password" id="newPassword" required>
+                                            <div class="password-strength" id="passwordStrength"></div>
+                                            <small class="form-text text-muted">Use at least 8 characters with a mix of letters, numbers, and symbols.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Confirm New Password</label>
+                                            <input type="password" class="form-control" name="confirm_password" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" name="change_password" class="btn btn-primary">Change Password</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Preferences Tab -->
+                    <div class="tab-pane fade" id="preferences" role="tabpanel">
+                        <div class="settings-section">
+                            <h3 class="settings-section-title">System Preferences</h3>
+                            
+                            <form method="POST" action="settings.php">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Language</label>
+                                            <select class="form-select" name="language">
+                                                <option value="English" <?php echo ($preferences['language'] == 'English') ? 'selected' : ''; ?>>English</option>
+                                                <option value="Filipino" <?php echo ($preferences['language'] == 'Filipino') ? 'selected' : ''; ?>>Filipino</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Time Zone</label>
+                                            <select class="form-select" name="timezone">
+                                                <option value="Asia/Manila (UTC+8)" <?php echo ($preferences['timezone'] == 'Asia/Manila (UTC+8)') ? 'selected' : ''; ?>>Asia/Manila (UTC+8)</option>
+                                                <option value="UTC+0" <?php echo ($preferences['timezone'] == 'UTC+0') ? 'selected' : ''; ?>>UTC+0</option>
+                                                <option value="UTC-5" <?php echo ($preferences['timezone'] == 'UTC-5') ? 'selected' : ''; ?>>UTC-5</option>
+                                                <option value="UTC-8" <?php echo ($preferences['timezone'] == 'UTC-8') ? 'selected' : ''; ?>>UTC-8</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="notificationsSwitch" name="email_notifications" <?php echo ($preferences['email_notifications'] == 1) ? 'checked' : ''; ?>>
+                                    <label class="form-check-label" for="notificationsSwitch">Enable Email Notifications</label>
+                                </div>
+                                
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="soundSwitch" name="sound_alerts" <?php echo ($preferences['sound_alerts'] == 1) ? 'checked' : ''; ?>>
+                                    <label class="form-check-label" for="soundSwitch">Enable Sound Alerts</label>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" name="update_preferences" class="btn btn-primary">Save Preferences</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Admin Tab (only for admins) -->
+                    <?php if ($is_admin): ?>
+                    <div class="tab-pane fade" id="admin" role="tabpanel">
+                        <div class="settings-section">
+                            <h3 class="settings-section-title">Administrator Settings</h3>
+                            
+                            <div class="admin-section">
+                                <h5>System Configuration</h5>
+                                <form>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">System Name</label>
+                                                <input type="text" class="form-control" value="Fire and Rescue Service Management">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">System Version</label>
+                                                <input type="text" class="form-control" value="v2.1.0" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">System Maintenance Mode</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="maintenanceSwitch">
+                                            <label class="form-check-label" for="maintenanceSwitch">Enable Maintenance Mode</label>
+                                        </div>
+                                        <small class="form-text text-muted">When enabled, only administrators can access the system.</small>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-end">
+                                        <button type="button" class="btn btn-primary">Save Configuration</button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="admin-section">
+                                <h5>Database Management</h5>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button class="btn btn-outline-primary">Backup Database</button>
+                                    <button class="btn btn-outline-primary">Optimize Database</button>
+                                    <button class="btn btn-outline-danger">Clear Cache</button>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Middle Name</label>
-                                    <input type="text" class="form-control" name="middle_name" 
-                                           value="<?php echo htmlspecialchars($user_data['middle_name'] ?? ''); ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" name="last_name" 
-                                           value="<?php echo htmlspecialchars($user_data['last_name'] ?? ''); ?>" required>
+                            
+                            <div class="admin-section">
+                                <h5>User Management</h5>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a href="user_management.php" class="btn btn-outline-primary">View All Users</a>
+                                    <a href="user_roles.php" class="btn btn-outline-primary">Manage Roles</a>
+                                    <a href="audit_logs.php" class="btn btn-outline-primary">View Audit Logs</a>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Username</label>
-                                    <input type="text" class="form-control" name="username" 
-                                           value="<?php echo htmlspecialchars($user_data['username'] ?? ''); ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Email Address</label>
-                                    <input type="email" class="form-control" name="email" 
-                                           value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" required>
-                                </div>
-                            </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Avatar Modal -->
+    <div class="modal fade" id="avatarModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Profile Picture</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="settings.php" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="avatar" class="form-label">Select an image</label>
+                            <input class="form-control" type="file" id="avatar" name="avatar" accept="image/*">
                         </div>
-                        
                         <div class="d-flex justify-content-end">
-                            <button type="submit" name="update_profile" class="btn btn-primary">Update Profile</button>
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" name="upload_avatar" class="btn btn-primary">Upload</button>
                         </div>
                     </form>
-                </div>
-                
-                <!-- Password Settings -->
-                <div class="settings-section">
-                    <h3 class="settings-section-title">Change Password</h3>
-                    
-                    <form method="POST" action="settings.php">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Current Password</label>
-                                    <input type="password" class="form-control" name="current_password" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">New Password</label>
-                                    <input type="password" class="form-control" name="new_password" id="newPassword" required>
-                                    <div class="password-strength" id="passwordStrength"></div>
-                                    <small class="form-text text-muted">Use at least 8 characters with a mix of letters, numbers, and symbols.</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Confirm New Password</label>
-                                    <input type="password" class="form-control" name="confirm_password" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" name="change_password" class="btn btn-primary">Change Password</button>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- System Preferences -->
-                <div class="settings-section">
-                    <h3 class="settings-section-title">System Preferences</h3>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Language</label>
-                                <select class="form-select">
-                                    <option selected>English</option>
-                                    <option>Filipino</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Time Zone</label>
-                                <select class="form-select">
-                                    <option selected>Asia/Manila (UTC+8)</option>
-                                    <option>UTC+0</option>
-                                    <option>UTC-5</option>
-                                    <option>UTC-8</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="notificationsSwitch" checked>
-                        <label class="form-check-label" for="notificationsSwitch">Enable Email Notifications</label>
-                    </div>
-                    
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="soundSwitch" checked>
-                        <label class="form-check-label" for="soundSwitch">Enable Sound Alerts</label>
-                    </div>
-                    
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-primary">Save Preferences</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -736,6 +1086,12 @@ if (isset($_SESSION['error_message'])) {
                     break;
             }
         });
+        
+        // Initialize tabs
+        const triggerTabList = document.querySelectorAll('#settingsTabs button')
+        triggerTabList.forEach(triggerEl => {
+            new bootstrap.Tab(triggerEl)
+        })
     </script>
 </body>
 </html>
