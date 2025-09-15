@@ -489,11 +489,11 @@ unset($_SESSION['new_incident_id']);
                         <i class='bx bx-check-shield'></i>
         <span>Training Compliance Monitoring</span>
                     </a>
-                     <a href="../..TCR/evaluation_and_assessment_recoreds/eaar.php" class="sidebar-dropdown-link">
+                     <a href="../../TCR/evaluation_and_assessment_recoreds/eaar.php" class="sidebar-dropdown-link">
                         <i class='bx bx-task'></i>
         <span>Evaluation and Assessment Records</span>
                     </a>
-                    <a href="../..TCR/reporting_and_auditlogs/ral.php" class="sidebar-dropdown-link">
+                    <a href="../../TCR/reporting_and_auditlogs/ral.php" class="sidebar-dropdown-link">
                         <i class='bx bx-file'></i>
         <span>Reporting and Audit Logs</span>
                 </div>
