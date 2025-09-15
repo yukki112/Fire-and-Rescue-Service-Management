@@ -499,19 +499,39 @@ unset($_SESSION['success_message']);
                     </a>
                 </div>
                 
-                <!-- Post-Incident Analysis and Reporting -->
+                  <!-- Post-Incident Analysis and Reporting -->
                 <a class="sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#piarMenu" role="button">
                     <i class='bx bx-analyse'></i>
                     <span class="text">Post-Incident Analysis</span>
                 </a>
                 <div class="sidebar-dropdown collapse" id="piarMenu">
-                    <a href="../incident_analysis/analysis.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-line-chart'></i>
-                        <span>Incident Analysis</span>
+                    <a href="../../PIAR/incident_summary_documentation/isd.php" class="sidebar-dropdown-link">
+<i class='bx bx-file'></i>
+    <span>Incident Summary Documentation</span>
                     </a>
-                    <a href="../lessons_learned/lessons.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-book-bookmark'></i>
-                        <span>Lessons Learned</span>
+                    <a href="../../PIAR/response_timeline_tracking/rtt.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-time-five'></i>
+    <span>Response Timeline Tracking</span>
+                    </a>
+                     <a href="../../PIAR/personnel_and_unit_involvement/paui.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-group'></i>
+    <span>Personnel and Unit Involvement</span>
+                    </a>
+                     <a href="../../PIAR/cause_and_origin_investigation/caoi.php" class="sidebar-dropdown-link">
+                       <i class='bx bx-search-alt'></i>
+    <span>Cause and Origin Investigation</span>
+                    </a>
+                       <a href="../../PIAR/damage_assessment/da.php" class="sidebar-dropdown-link">
+                      <i class='bx bx-building-house'></i>
+    <span>Damage Assessment</span>
+                    </a>
+                       <a href="../../PIAR/action_review_and_lessons_learned/arall.php" class="sidebar-dropdown-link">
+                     <i class='bx bx-refresh'></i>
+    <span>Action Review and Lessons Learned</span>
+                    </a>
+                     <a href="../../PIAR/report_generation_and_archiving/rgaa.php" class="sidebar-dropdown-link">
+                     <i class='bx bx-archive'></i>
+    <span>Report Generation and Archiving</span>
                     </a>
                 </div>
                 

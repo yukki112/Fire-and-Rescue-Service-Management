@@ -5,7 +5,7 @@ session_start([
     'cookie_httponly' => true,
     'use_strict_mode' => true
 ]);
-require_once 'db_connection.php';
+require_once 'config/db_connection.php';
 
 $errors = [];
 $success = false;
@@ -190,18 +190,15 @@ if (isset($_GET['token'])) {
         .brand-logo {
             width: 120px;
             height: 120px;
-            background: rgba(255, 255, 255, 0.15);
+        
             border-radius: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 24px;
             position: relative;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+           
+           
         }
         
         .brand-logo i {
@@ -531,7 +528,7 @@ if (isset($_GET['token'])) {
             <!-- Branding Section -->
             <div class="auth-brand">
                 <div class="brand-logo">
-                    <i class="fas fa-fire-flame-curved"></i>
+                    <img src="img/frsmse.png" alt="FRSM Logo" style="width: 180px; height: 180px;">
                 </div>
                 <h1 class="brand-title">FRSM</h1>
                 <p class="brand-subtitle">Fire and Rescue Service Management System</p>

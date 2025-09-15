@@ -102,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $status = filter_input(INPUT_POST, 'status', FILTER_SANITIZE_STRING);
             $paid_amount = filter_input(INPUT_POST, 'paid_amount', FILTER_VALIDATE_FLOAT);
             $payment_date = filter_input(INPUT_POST, 'payment_date', FILTER_SANITIZE_STRING);
+            $resolution_notes = filter_input(INPUT_POST, 'resolution_notes', FILTER_SANITIZE_STRING);
             
             // Validate required fields
             if (!$id || empty($violation_code) || empty($description) || 
@@ -141,15 +142,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fine_amount = $fine_amount ?: 0;
             $paid_amount = $paid_amount ?: 0;
             $payment_date = $payment_date ?: null;
+            $resolution_notes = $resolution_notes ?: null;
             
             $query = "UPDATE violations SET 
                      violation_code = ?, description = ?, severity = ?, 
                      corrective_action = ?, deadline = ?, fine_amount = ?,
-                     status = ?, paid_amount = ?, payment_date = ?, updated_at = NOW() 
+                     status = ?, paid_amount = ?, payment_date = ?, resolution_notes = ?, updated_at = NOW() 
                      WHERE id = ?";
             
             $params = [$violation_code, $description, $severity, $corrective_action, 
-                      $deadline, $fine_amount, $status, $paid_amount, $payment_date, $id];
+                      $deadline, $fine_amount, $status, $paid_amount, $payment_date, $resolution_notes, $id];
             
             $dbManager->query("ficr", $query, $params);
             
@@ -851,37 +853,51 @@ if (isset($_SESSION['error_message'])) {
                     </a>
                 </div>
                 
-                <!-- Post-Incident Analysis and Reporting -->
+               <!-- Post-Incident Analysis and Reporting -->
                 <a class="sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#piarMenu" role="button">
                     <i class='bx bx-analyse'></i>
                     <span class="text">Post-Incident Analysis</span>
                 </a>
                 <div class="sidebar-dropdown collapse" id="piarMenu">
-                    <a href="../incident_analysis/analysis.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-line-chart'></i>
-                        <span>Incident Analysis</span>
+                    <a href="../../PIAR/incident_summary_documentation/isd.php" class="sidebar-dropdown-link">
+<i class='bx bx-file'></i>
+    <span>Incident Summary Documentation</span>
                     </a>
-                    <a href="../lessons_learned/lessons.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-book-open'></i>
-                        <span>Lessons Learned</span>
+                    <a href="../../PIAR/response_timeline_tracking/rtt.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-time-five'></i>
+    <span>Response Timeline Tracking</span>
                     </a>
-                    <a href="../recommendation_tracking/recommendation.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-check-square'></i>
-                        <span>Recommendation Tracking</span>
+                     <a href="../../PIAR/personnel_and_unit_involvement/paui.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-group'></i>
+    <span>Personnel and Unit Involvement</span>
                     </a>
-                    <a href="../report_generation/report.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-file'></i>
-                        <span>Report Generation</span>
+                     <a href="../../PIAR/cause_and_origin_investigation/caoi.php" class="sidebar-dropdown-link">
+                       <i class='bx bx-search-alt'></i>
+    <span>Cause and Origin Investigation</span>
+                    </a>
+                       <a href="../../PIAR/damage_assessment/da.php" class="sidebar-dropdown-link">
+                      <i class='bx bx-building-house'></i>
+    <span>Damage Assessment</span>
+                    </a>
+                       <a href="../../PIAR/action_review_and_lessons_learned/arall.php" class="sidebar-dropdown-link">
+                     <i class='bx bx-refresh'></i>
+    <span>Action Review and Lessons Learned</span>
+                    </a>
+                     <a href="../../PIAR/report_generation_and_archiving/rgaa.php" class="sidebar-dropdown-link">
+                     <i class='bx bx-archive'></i>
+    <span>Report Generation and Archiving</span>
                     </a>
                 </div>
-            </div>
-            
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="name"><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></div>
-                    <div class="role"><?php echo htmlspecialchars(ucfirst($user['role'])); ?></div>
-                </div>
-                <a href="../../logout.php" class="sidebar-link logout">
+                
+                
+                <div class="sidebar-section">Account</div>
+                
+                <a href="../../settings.php" class="sidebar-link">
+                    <i class='bx bxs-cog'></i>
+                    <span class="text">Settings</span>
+                </a>
+                
+                <a href="../../logout.php" class="sidebar-link">
                     <i class='bx bx-log-out'></i>
                     <span class="text">Logout</span>
                 </a>
@@ -890,45 +906,64 @@ if (isset($_SESSION['error_message'])) {
         
         <!-- Main Content -->
         <div class="main-content">
+            <!-- Dashboard Header -->
             <div class="dashboard-header">
-                <h1>Violation and Compliance Tracking</h1>
+                <div class="header-left">
+                    <h1>Violation and Compliance Tracking</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="../../dashboard.php">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="#">FICR</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Violation and Compliance Tracking</li>
+                        </ol>
+                    </nav>
+                </div>
+                
                 <div class="header-actions">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addViolationModal">
-                        <i class='bx bx-plus'></i> Add New Violation
-                    </button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addViolationModal">
+                            <i class='bx bx-plus'></i> Add New Violation
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="exportBtn">
+                            <i class='bx bx-download'></i> Export
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <!-- Messages -->
-            <?php if ($success_message): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class='bx bx-check-circle me-2'></i>
-                <?php echo htmlspecialchars($success_message); ?>
+            <!-- Alerts -->
+            <?php if (!empty($error_message)): ?>
+            <div class="alert alert-danger alert-dismissible fade show animate-fade-in" role="alert">
+                <i class='bx bx-error-circle'></i> <?php echo htmlspecialchars($error_message); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             <?php endif; ?>
             
-            <?php if ($error_message): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class='bx bx-error-circle me-2'></i>
-                <?php echo htmlspecialchars($error_message); ?>
+            <?php if (!empty($success_message)): ?>
+            <div class="alert alert-success alert-dismissible fade show animate-fade-in" role="alert">
+                <i class='bx bx-check-circle'></i> <?php echo htmlspecialchars($success_message); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             <?php endif; ?>
             
             <!-- Filter Section -->
             <div class="filter-section">
-                <div class="filter-header" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true">
+                <div class="filter-header" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
                     <h5><i class='bx bx-filter-alt'></i> Filter Violations</h5>
                     <i class='bx bx-chevron-up filter-toggle'></i>
                 </div>
                 
                 <div class="collapse show" id="filterCollapse">
-                    <form method="GET" id="filterForm">
+                    <form method="GET" action="">
                         <div class="filter-content">
-                            <div>
-                                <label class="form-label">Status</label>
-                                <select class="form-select" name="filter_status">
+                            <div class="mb-3">
+                                <label for="search" class="form-label">Search</label>
+                                <input type="text" class="form-control" id="search" name="search" placeholder="Search by code, description, or establishment" value="<?php echo htmlspecialchars($search); ?>">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="filter_status" class="form-label">Status</label>
+                                <select class="form-select" id="filter_status" name="filter_status">
                                     <option value="">All Statuses</option>
                                     <option value="open" <?php echo $filter_status === 'open' ? 'selected' : ''; ?>>Open</option>
                                     <option value="in_progress" <?php echo $filter_status === 'in_progress' ? 'selected' : ''; ?>>In Progress</option>
@@ -937,9 +972,9 @@ if (isset($_SESSION['error_message'])) {
                                 </select>
                             </div>
                             
-                            <div>
-                                <label class="form-label">Severity</label>
-                                <select class="form-select" name="filter_severity">
+                            <div class="mb-3">
+                                <label for="filter_severity" class="form-label">Severity</label>
+                                <select class="form-select" id="filter_severity" name="filter_severity">
                                     <option value="">All Severities</option>
                                     <option value="minor" <?php echo $filter_severity === 'minor' ? 'selected' : ''; ?>>Minor</option>
                                     <option value="major" <?php echo $filter_severity === 'major' ? 'selected' : ''; ?>>Major</option>
@@ -947,23 +982,16 @@ if (isset($_SESSION['error_message'])) {
                                 </select>
                             </div>
                             
-                            <div>
-                                <label class="form-label">Establishment</label>
-                                <select class="form-select" name="filter_establishment">
+                            <div class="mb-3">
+                                <label for="filter_establishment" class="form-label">Establishment</label>
+                                <select class="form-select" id="filter_establishment" name="filter_establishment">
                                     <option value="">All Establishments</option>
                                     <?php foreach ($establishments as $est): ?>
-                                    <option value="<?php echo htmlspecialchars($est['id']); ?>" 
-                                        <?php echo $filter_establishment == $est['id'] ? 'selected' : ''; ?>>
+                                    <option value="<?php echo $est['id']; ?>" <?php echo $filter_establishment == $est['id'] ? 'selected' : ''; ?>>
                                         <?php echo htmlspecialchars($est['name']); ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
-                            </div>
-                            
-                            <div>
-                                <label class="form-label">Search</label>
-                                <input type="text" class="form-control" name="search" placeholder="Search violations..." 
-                                       value="<?php echo htmlspecialchars($search); ?>">
                             </div>
                         </div>
                         
@@ -980,38 +1008,41 @@ if (isset($_SESSION['error_message'])) {
             </div>
             
             <!-- Violations Table -->
-            <div class="card">
+            <div class="card animate-slide-in">
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover violations-table">
                             <thead>
                                 <tr>
                                     <th>Code</th>
+                                    <th>Description</th>
                                     <th>Establishment</th>
-                                    <th>Violation Description</th>
                                     <th>Severity</th>
-                                    <th>Status</th>
                                     <th>Deadline</th>
-                                    <th>Fine Amount</th>
+                                    <th>Status</th>
+                                    <th>Fine</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (count($violations) > 0): ?>
                                 <?php foreach ($violations as $violation): 
-                                    $deadline_class = '';
-                                    $deadline_date = new DateTime($violation['deadline']);
+                                    // Calculate days until deadline
+                                    $deadline = new DateTime($violation['deadline']);
                                     $today = new DateTime();
+                                    $days_remaining = $today->diff($deadline)->format('%r%a');
                                     
-                                    if ($deadline_date < $today && $violation['status'] !== 'resolved') {
+                                    // Determine deadline class
+                                    $deadline_class = '';
+                                    if ($days_remaining < 0) {
                                         $deadline_class = 'deadline-passed';
-                                    } elseif ($deadline_date->diff($today)->days <= 7 && $violation['status'] !== 'resolved') {
+                                    } elseif ($days_remaining <= 7) {
                                         $deadline_class = 'deadline-near';
                                     } else {
                                         $deadline_class = 'deadline-future';
                                     }
                                     
-                                    // Payment status
+                                    // Determine payment status
                                     $payment_status = '';
                                     if ($violation['paid_amount'] >= $violation['fine_amount']) {
                                         $payment_status = 'payment-full';
@@ -1027,82 +1058,87 @@ if (isset($_SESSION['error_message'])) {
                                 <tr>
                                     <td>
                                         <strong><?php echo htmlspecialchars($violation['violation_code']); ?></strong>
-                                        <br>
-                                        <small class="text-muted"><?php echo date('M d, Y', strtotime($violation['inspection_date'])); ?></small>
                                     </td>
                                     <td>
-                                        <strong><?php echo htmlspecialchars($violation['establishment_name']); ?></strong>
-                                        <br>
+                                        <div class="fw-semibold"><?php echo htmlspecialchars($violation['description']); ?></div>
+                                        <small class="text-muted"><?php echo htmlspecialchars($violation['item_text']); ?></small>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold"><?php echo htmlspecialchars($violation['establishment_name']); ?></div>
                                         <small class="text-muted"><?php echo htmlspecialchars($violation['establishment_address']); ?></small>
                                     </td>
                                     <td>
-                                        <div class="fw-medium"><?php echo htmlspecialchars($violation['item_text']); ?></div>
-                                        <small><?php echo htmlspecialchars($violation['description']); ?></small>
-                                    </td>
-                                    <td>
-                                        <span class="violation-badge badge-<?php echo htmlspecialchars($violation['severity']); ?>">
-                                            <?php echo htmlspecialchars(ucfirst($violation['severity'])); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="violation-badge badge-<?php echo htmlspecialchars($violation['status']); ?>">
-                                            <?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $violation['status']))); ?>
+                                        <span class="violation-badge badge-<?php echo $violation['severity']; ?>">
+                                            <?php echo ucfirst($violation['severity']); ?>
                                         </span>
                                     </td>
                                     <td class="<?php echo $deadline_class; ?>">
-                                        <?php echo date('M d, Y', strtotime($violation['deadline'])); ?>
+                                        <?php echo date('M j, Y', strtotime($violation['deadline'])); ?>
+                                        <?php if ($days_remaining >= 0): ?>
+                                        <br><small>(<?php echo $days_remaining; ?> days remaining)</small>
+                                        <?php else: ?>
+                                        <br><small>(<?php echo abs($days_remaining); ?> days overdue)</small>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
+                                        <span class="violation-badge badge-<?php echo $violation['status']; ?>">
+                                            <?php echo ucfirst(str_replace('_', ' ', $violation['status'])); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <?php if ($violation['fine_amount'] > 0): ?>
                                         <div>₱<?php echo number_format($violation['fine_amount'], 2); ?></div>
                                         <span class="payment-status <?php echo $payment_status; ?>">
                                             <?php echo $payment_text; ?>
                                         </span>
+                                        <?php else: ?>
+                                        <span class="text-muted">No fine</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
-                                        <div class="btn-group">
-                                            <button class="btn btn-sm btn-outline-primary btn-action" 
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#viewViolationModal" 
-                                                    data-id="<?php echo htmlspecialchars($violation['id']); ?>"
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary btn-action view-violation" 
+                                                    data-bs-toggle="modal" data-bs-target="#viewViolationModal"
+                                                    data-id="<?php echo $violation['id']; ?>"
                                                     data-violation-code="<?php echo htmlspecialchars($violation['violation_code']); ?>"
                                                     data-description="<?php echo htmlspecialchars($violation['description']); ?>"
-                                                    data-severity="<?php echo htmlspecialchars($violation['severity']); ?>"
-                                                    data-status="<?php echo htmlspecialchars($violation['status']); ?>"
+                                                    data-severity="<?php echo $violation['severity']; ?>"
                                                     data-corrective-action="<?php echo htmlspecialchars($violation['corrective_action']); ?>"
-                                                    data-deadline="<?php echo htmlspecialchars($violation['deadline']); ?>"
-                                                    data-fine-amount="<?php echo htmlspecialchars($violation['fine_amount']); ?>"
-                                                    data-paid-amount="<?php echo htmlspecialchars($violation['paid_amount']); ?>"
-                                                    data-payment-date="<?php echo htmlspecialchars($violation['payment_date']); ?>"
+                                                    data-deadline="<?php echo $violation['deadline']; ?>"
+                                                    data-fine-amount="<?php echo $violation['fine_amount']; ?>"
+                                                    data-status="<?php echo $violation['status']; ?>"
+                                                    data-paid-amount="<?php echo $violation['paid_amount']; ?>"
+                                                    data-payment-date="<?php echo $violation['payment_date']; ?>"
                                                     data-resolution-notes="<?php echo htmlspecialchars($violation['resolution_notes']); ?>"
                                                     data-establishment-name="<?php echo htmlspecialchars($violation['establishment_name']); ?>"
                                                     data-establishment-address="<?php echo htmlspecialchars($violation['establishment_address']); ?>"
-                                                    data-inspection-date="<?php echo htmlspecialchars($violation['inspection_date']); ?>"
+                                                    data-inspection-date="<?php echo date('M j, Y', strtotime($violation['inspection_date'])); ?>"
+                                                    data-overall-rating="<?php echo $violation['overall_rating']; ?>"
                                                     data-inspector-name="<?php echo htmlspecialchars($violation['inspector_name']); ?>"
                                                     data-item-text="<?php echo htmlspecialchars($violation['item_text']); ?>">
                                                 <i class='bx bx-show'></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-secondary btn-action" 
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#editViolationModal"
-                                                    data-id="<?php echo htmlspecialchars($violation['id']); ?>"
+                                            <button type="button" class="btn btn-outline-secondary btn-action edit-violation"
+                                                    data-bs-toggle="modal" data-bs-target="#editViolationModal"
+                                                    data-id="<?php echo $violation['id']; ?>"
                                                     data-violation-code="<?php echo htmlspecialchars($violation['violation_code']); ?>"
                                                     data-description="<?php echo htmlspecialchars($violation['description']); ?>"
-                                                    data-severity="<?php echo htmlspecialchars($violation['severity']); ?>"
-                                                    data-status="<?php echo htmlspecialchars($violation['status']); ?>"
+                                                    data-severity="<?php echo $violation['severity']; ?>"
                                                     data-corrective-action="<?php echo htmlspecialchars($violation['corrective_action']); ?>"
-                                                    data-deadline="<?php echo htmlspecialchars($violation['deadline']); ?>"
-                                                    data-fine-amount="<?php echo htmlspecialchars($violation['fine_amount']); ?>"
-                                                    data-paid-amount="<?php echo htmlspecialchars($violation['paid_amount']); ?>"
-                                                    data-payment-date="<?php echo htmlspecialchars($violation['payment_date']); ?>">
+                                                    data-deadline="<?php echo $violation['deadline']; ?>"
+                                                    data-fine-amount="<?php echo $violation['fine_amount']; ?>"
+                                                    data-status="<?php echo $violation['status']; ?>"
+                                                    data-paid-amount="<?php echo $violation['paid_amount']; ?>"
+                                                    data-payment-date="<?php echo $violation['payment_date']; ?>"
+                                                    data-resolution-notes="<?php echo htmlspecialchars($violation['resolution_notes']); ?>">
                                                 <i class='bx bx-edit'></i>
                                             </button>
                                             <?php if ($violation['status'] !== 'resolved'): ?>
-                                            <button class="btn btn-sm btn-outline-success btn-action" 
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#resolveViolationModal"
-                                                    data-id="<?php echo htmlspecialchars($violation['id']); ?>"
+                                            <button type="button" class="btn btn-outline-success btn-action resolve-violation"
+                                                    data-bs-toggle="modal" data-bs-target="#resolveViolationModal"
+                                                    data-id="<?php echo $violation['id']; ?>"
                                                     data-violation-code="<?php echo htmlspecialchars($violation['violation_code']); ?>"
-                                                    data-establishment-name="<?php echo htmlspecialchars($violation['establishment_name']); ?>">
+                                                    data-description="<?php echo htmlspecialchars($violation['description']); ?>">
                                                 <i class='bx bx-check-circle'></i>
                                             </button>
                                             <?php endif; ?>
@@ -1116,7 +1152,7 @@ if (isset($_SESSION['error_message'])) {
                                         <div class="empty-state">
                                             <i class='bx bx-search-alt'></i>
                                             <h5>No violations found</h5>
-                                            <p>Try adjusting your filters or add a new violation.</p>
+                                            <p>Try adjusting your search or filter criteria</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -1130,53 +1166,52 @@ if (isset($_SESSION['error_message'])) {
     </div>
     
     <!-- Add Violation Modal -->
-    <div class="modal fade" id="addViolationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="addViolationModal" tabindex="-1" aria-labelledby="addViolationModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add New Violation</h5>
+                    <h5 class="modal-title" id="addViolationModalLabel">Add New Violation</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="POST" id="addViolationForm" novalidate>
+                <form method="POST" action="" id="addViolationForm" novalidate>
+                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                     <div class="modal-body">
-                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Inspection *</label>
-                                <select class="form-select" name="inspection_id" required>
+                                <label for="inspection_id" class="form-label">Inspection <span class="text-danger">*</span></label>
+                                <select class="form-select" id="inspection_id" name="inspection_id" required>
                                     <option value="">Select Inspection</option>
                                     <?php foreach ($inspections as $inspection): ?>
-                                    <option value="<?php echo htmlspecialchars($inspection['id']); ?>">
-                                        <?php echo htmlspecialchars($inspection['establishment_name'] . ' - ' . date('M d, Y', strtotime($inspection['inspection_date']))); ?>
+                                    <option value="<?php echo $inspection['id']; ?>">
+                                        <?php echo htmlspecialchars($inspection['establishment_name'] . ' - ' . date('M j, Y', strtotime($inspection['inspection_date']))); ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
                                 <div class="invalid-feedback">Please select an inspection</div>
                             </div>
-                            
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Checklist Item *</label>
-                                <select class="form-select" name="item_id" required>
+                                <label for="item_id" class="form-label">Checklist Item <span class="text-danger">*</span></label>
+                                <select class="form-select" id="item_id" name="item_id" required>
                                     <option value="">Select Checklist Item</option>
                                     <?php foreach ($checklist_items as $item): ?>
-                                    <option value="<?php echo htmlspecialchars($item['id']); ?>">
+                                    <option value="<?php echo $item['id']; ?>">
                                         <?php echo htmlspecialchars($item['checklist_name'] . ' - ' . $item['item_text']); ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
                                 <div class="invalid-feedback">Please select a checklist item</div>
                             </div>
-                            
+                        </div>
+                        
+                        <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Violation Code *</label>
-                                <input type="text" class="form-control" name="violation_code" required>
+                                <label for="violation_code" class="form-label">Violation Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="violation_code" name="violation_code" required>
                                 <div class="invalid-feedback">Please enter a violation code</div>
                             </div>
-                            
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Severity *</label>
-                                <select class="form-select" name="severity" required>
+                                <label for="severity" class="form-label">Severity <span class="text-danger">*</span></label>
+                                <select class="form-select" id="severity" name="severity" required>
                                     <option value="">Select Severity</option>
                                     <option value="minor">Minor</option>
                                     <option value="major">Major</option>
@@ -1184,28 +1219,29 @@ if (isset($_SESSION['error_message'])) {
                                 </select>
                                 <div class="invalid-feedback">Please select a severity level</div>
                             </div>
-                            
-                            <div class="col-12 mb-3">
-                                <label class="form-label">Description *</label>
-                                <textarea class="form-control" name="description" rows="3" required></textarea>
-                                <div class="invalid-feedback">Please enter a description</div>
-                            </div>
-                            
-                            <div class="col-12 mb-3">
-                                <label class="form-label">Corrective Action *</label>
-                                <textarea class="form-control" name="corrective_action" rows="3" required></textarea>
-                                <div class="invalid-feedback">Please enter corrective action</div>
-                            </div>
-                            
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            <div class="invalid-feedback">Please enter a description</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="corrective_action" class="form-label">Corrective Action <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="corrective_action" name="corrective_action" rows="3" required></textarea>
+                            <div class="invalid-feedback">Please enter a corrective action</div>
+                        </div>
+                        
+                        <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Deadline *</label>
-                                <input type="date" class="form-control" name="deadline" required>
+                                <label for="deadline" class="form-label">Deadline <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="deadline" name="deadline" required>
                                 <div class="invalid-feedback">Please select a deadline</div>
                             </div>
-                            
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Fine Amount (₱)</label>
-                                <input type="number" class="form-control" name="fine_amount" min="0" step="0.01">
+                                <label for="fine_amount" class="form-label">Fine Amount (₱)</label>
+                                <input type="number" class="form-control" id="fine_amount" name="fine_amount" min="0" step="0.01">
                                 <div class="invalid-feedback">Please enter a valid amount</div>
                             </div>
                         </div>
@@ -1219,57 +1255,163 @@ if (isset($_SESSION['error_message'])) {
         </div>
     </div>
     
-    <!-- Edit Violation Modal -->
-    <div class="modal fade" id="editViolationModal" tabindex="-1" aria-hidden="true">
+    <!-- View Violation Modal -->
+    <div class="modal fade" id="viewViolationModal" tabindex="-1" aria-labelledby="viewViolationModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Violation</h5>
+                    <h5 class="modal-title" id="viewViolationModalLabel">Violation Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="POST" id="editViolationForm" novalidate>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Violation Information</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">Code:</th>
+                                    <td id="view-violation-code"></td>
+                                </tr>
+                                <tr>
+                                    <th>Description:</th>
+                                    <td id="view-description"></td>
+                                </tr>
+                                <tr>
+                                    <th>Severity:</th>
+                                    <td><span class="violation-badge" id="view-severity"></span></td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td><span class="violation-badge" id="view-status"></span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Establishment Information</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">Name:</th>
+                                    <td id="view-establishment-name"></td>
+                                </tr>
+                                <tr>
+                                    <th>Address:</th>
+                                    <td id="view-establishment-address"></td>
+                                </tr>
+                                <tr>
+                                    <th>Inspection Date:</th>
+                                    <td id="view-inspection-date"></td>
+                                </tr>
+                                <tr>
+                                    <th>Inspector:</th>
+                                    <td id="view-inspector-name"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Compliance Details</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">Checklist Item:</th>
+                                    <td id="view-item-text"></td>
+                                </tr>
+                                <tr>
+                                    <th>Corrective Action:</th>
+                                    <td id="view-corrective-action"></td>
+                                </tr>
+                                <tr>
+                                    <th>Deadline:</th>
+                                    <td id="view-deadline"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Financial Information</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">Fine Amount:</th>
+                                    <td id="view-fine-amount"></td>
+                                </tr>
+                                <tr>
+                                    <th>Paid Amount:</th>
+                                    <td id="view-paid-amount"></td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Date:</th>
+                                    <td id="view-payment-date"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>Resolution Notes</h6>
+                        <div class="card">
+                            <div class="card-body">
+                                <p id="view-resolution-notes" class="mb-0"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Violation Modal -->
+    <div class="modal fade" id="editViolationModal" tabindex="-1" aria-labelledby="editViolationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editViolationModalLabel">Edit Violation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="" id="editViolationForm" novalidate>
+                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                    <input type="hidden" name="id" id="edit-id">
                     <div class="modal-body">
-                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-                        <input type="hidden" name="id" id="edit_id">
-                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Violation Code *</label>
-                                <input type="text" class="form-control" name="violation_code" id="edit_violation_code" required>
+                                <label for="edit-violation_code" class="form-label">Violation Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit-violation_code" name="violation_code" required>
                                 <div class="invalid-feedback">Please enter a violation code</div>
                             </div>
-                            
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Severity *</label>
-                                <select class="form-select" name="severity" id="edit_severity" required>
+                                <label for="edit-severity" class="form-label">Severity <span class="text-danger">*</span></label>
+                                <select class="form-select" id="edit-severity" name="severity" required>
                                     <option value="minor">Minor</option>
                                     <option value="major">Major</option>
                                     <option value="critical">Critical</option>
                                 </select>
                                 <div class="invalid-feedback">Please select a severity level</div>
                             </div>
-                            
-                            <div class="col-12 mb-3">
-                                <label class="form-label">Description *</label>
-                                <textarea class="form-control" name="description" id="edit_description" rows="3" required></textarea>
-                                <div class="invalid-feedback">Please enter a description</div>
-                            </div>
-                            
-                            <div class="col-12 mb-3">
-                                <label class="form-label">Corrective Action *</label>
-                                <textarea class="form-control" name="corrective_action" id="edit_corrective_action" rows="3" required></textarea>
-                                <div class="invalid-feedback">Please enter corrective action</div>
-                            </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Deadline *</label>
-                                <input type="date" class="form-control" name="deadline" id="edit_deadline" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="edit-description" class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="edit-description" name="description" rows="3" required></textarea>
+                            <div class="invalid-feedback">Please enter a description</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="edit-corrective_action" class="form-label">Corrective Action <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="edit-corrective_action" name="corrective_action" rows="3" required></textarea>
+                            <div class="invalid-feedback">Please enter a corrective action</div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-deadline" class="form-label">Deadline <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="edit-deadline" name="deadline" required>
                                 <div class="invalid-feedback">Please select a deadline</div>
                             </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Status *</label>
-                                <select class="form-select" name="status" id="edit_status" required>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-status" class="form-label">Status <span class="text-danger">*</span></label>
+                                <select class="form-select" id="edit-status" name="status" required>
                                     <option value="open">Open</option>
                                     <option value="in_progress">In Progress</option>
                                     <option value="resolved">Resolved</option>
@@ -1277,24 +1419,32 @@ if (isset($_SESSION['error_message'])) {
                                 </select>
                                 <div class="invalid-feedback">Please select a status</div>
                             </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Fine Amount (₱)</label>
-                                <input type="number" class="form-control" name="fine_amount" id="edit_fine_amount" min="0" step="0.01">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-fine_amount" class="form-label">Fine Amount (₱)</label>
+                                <input type="number" class="form-control" id="edit-fine_amount" name="fine_amount" min="0" step="0.01">
                                 <div class="invalid-feedback">Please enter a valid amount</div>
                             </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Paid Amount (₱)</label>
-                                <input type="number" class="form-control" name="paid_amount" id="edit_paid_amount" min="0" step="0.01">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-paid_amount" class="form-label">Paid Amount (₱)</label>
+                                <input type="number" class="form-control" id="edit-paid_amount" name="paid_amount" min="0" step="0.01">
                                 <div class="invalid-feedback">Please enter a valid amount</div>
                             </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Payment Date</label>
-                                <input type="date" class="form-control" name="payment_date" id="edit_payment_date">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-payment_date" class="form-label">Payment Date</label>
+                                <input type="date" class="form-control" id="edit-payment_date" name="payment_date">
                                 <div class="invalid-feedback">Please select a valid date</div>
                             </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="edit-resolution_notes" class="form-label">Resolution Notes</label>
+                            <textarea class="form-control" id="edit-resolution_notes" name="resolution_notes" rows="3"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -1307,30 +1457,28 @@ if (isset($_SESSION['error_message'])) {
     </div>
     
     <!-- Resolve Violation Modal -->
-    <div class="modal fade" id="resolveViolationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="resolveViolationModal" tabindex="-1" aria-labelledby="resolveViolationModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Resolve Violation</h5>
+                    <h5 class="modal-title" id="resolveViolationModalLabel">Resolve Violation</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="POST" id="resolveViolationForm" novalidate>
+                <form method="POST" action="" id="resolveViolationForm" novalidate>
+                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                    <input type="hidden" name="id" id="resolve-id">
                     <div class="modal-body">
-                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-                        <input type="hidden" name="id" id="resolve_id">
-                        
                         <div class="mb-3">
-                            <p>You are about to resolve the following violation:</p>
+                            <p>You are about to mark the following violation as resolved:</p>
                             <div class="alert alert-info">
-                                <strong id="resolve_violation_code"></strong>
-                                <br>
-                                <span id="resolve_establishment_name"></span>
+                                <strong id="resolve-violation-code"></strong>
+                                <p id="resolve-description" class="mb-0"></p>
                             </div>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Resolution Notes *</label>
-                            <textarea class="form-control" name="resolution_notes" rows="4" required></textarea>
+                            <label for="resolution_notes" class="form-label">Resolution Notes <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="resolution_notes" name="resolution_notes" rows="4" required placeholder="Describe how this violation was resolved..."></textarea>
                             <div class="invalid-feedback">Please provide resolution notes</div>
                         </div>
                     </div>
@@ -1342,252 +1490,150 @@ if (isset($_SESSION['error_message'])) {
             </div>
         </div>
     </div>
-    
-    <!-- View Violation Modal -->
-    <div class="modal fade" id="viewViolationModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Violation Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <h6>Violation Information</h6>
-                            <table class="table table-sm">
-                                <tr>
-                                    <th width="40%">Code:</th>
-                                    <td id="view_violation_code"></td>
-                                </tr>
-                                <tr>
-                                    <th>Severity:</th>
-                                    <td><span class="violation-badge" id="view_severity_badge"></span></td>
-                                </tr>
-                                <tr>
-                                    <th>Status:</th>
-                                    <td><span class="violation-badge" id="view_status_badge"></span></td>
-                                </tr>
-                                <tr>
-                                    <th>Deadline:</th>
-                                    <td id="view_deadline"></td>
-                                </tr>
-                                <tr>
-                                    <th>Fine Amount:</th>
-                                    <td id="view_fine_amount"></td>
-                                </tr>
-                                <tr>
-                                    <th>Paid Amount:</th>
-                                    <td id="view_paid_amount"></td>
-                                </tr>
-                                <tr>
-                                    <th>Payment Date:</th>
-                                    <td id="view_payment_date"></td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>Establishment Information</h6>
-                            <table class="table table-sm">
-                                <tr>
-                                    <th width="40%">Name:</th>
-                                    <td id="view_establishment_name"></td>
-                                </tr>
-                                <tr>
-                                    <th>Address:</th>
-                                    <td id="view_establishment_address"></td>
-                                </tr>
-                                <tr>
-                                    <th>Inspection Date:</th>
-                                    <td id="view_inspection_date"></td>
-                                </tr>
-                                <tr>
-                                    <th>Inspector:</th>
-                                    <td id="view_inspector_name"></td>
-                                </tr>
-                                <tr>
-                                    <th>Checklist Item:</th>
-                                    <td id="view_item_text"></td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h6>Description</h6>
-                            <div class="card card-body bg-light">
-                                <p id="view_description"></p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h6>Corrective Action</h6>
-                            <div class="card card-body bg-light">
-                                <p id="view_corrective_action"></p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-12">
-                            <h6>Resolution Notes</h6>
-                            <div class="card card-body bg-light">
-                                <p id="view_resolution_notes">No resolution notes provided.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Mobile sidebar toggle
-        document.getElementById('mobileMenuButton').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
-        
-        // Filter toggle animation
-        const filterHeader = document.querySelector('.filter-header');
-        const filterToggle = document.querySelector('.filter-toggle');
-        
-        filterHeader.addEventListener('click', function() {
-            filterToggle.classList.toggle('collapsed');
-        });
-        
-        // Modal data handling
-        const editViolationModal = document.getElementById('editViolationModal');
-        if (editViolationModal) {
-            editViolationModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const modal = this;
-                
-                modal.querySelector('#edit_id').value = button.getAttribute('data-id');
-                modal.querySelector('#edit_violation_code').value = button.getAttribute('data-violation-code');
-                modal.querySelector('#edit_description').value = button.getAttribute('data-description');
-                modal.querySelector('#edit_severity').value = button.getAttribute('data-severity');
-                modal.querySelector('#edit_status').value = button.getAttribute('data-status');
-                modal.querySelector('#edit_corrective_action').value = button.getAttribute('data-corrective-action');
-                modal.querySelector('#edit_deadline').value = button.getAttribute('data-deadline');
-                modal.querySelector('#edit_fine_amount').value = button.getAttribute('data-fine-amount');
-                modal.querySelector('#edit_paid_amount').value = button.getAttribute('data-paid-amount') || '';
-                modal.querySelector('#edit_payment_date').value = button.getAttribute('data-payment-date') || '';
-            });
-        }
-        
-        const resolveViolationModal = document.getElementById('resolveViolationModal');
-        if (resolveViolationModal) {
-            resolveViolationModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const modal = this;
-                
-                modal.querySelector('#resolve_id').value = button.getAttribute('data-id');
-                modal.querySelector('#resolve_violation_code').textContent = button.getAttribute('data-violation-code');
-                modal.querySelector('#resolve_establishment_name').textContent = button.getAttribute('data-establishment-name');
-            });
-        }
-        
-        const viewViolationModal = document.getElementById('viewViolationModal');
-        if (viewViolationModal) {
-            viewViolationModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const modal = this;
-                
-                // Set basic info
-                modal.querySelector('#view_violation_code').textContent = button.getAttribute('data-violation-code');
-                modal.querySelector('#view_description').textContent = button.getAttribute('data-description');
-                modal.querySelector('#view_corrective_action').textContent = button.getAttribute('data-corrective-action');
-                
-                // Set severity badge
-                const severity = button.getAttribute('data-severity');
-                modal.querySelector('#view_severity_badge').textContent = severity.charAt(0).toUpperCase() + severity.slice(1);
-                modal.querySelector('#view_severity_badge').className = 'violation-badge badge-' + severity;
-                
-                // Set status badge
-                const status = button.getAttribute('data-status');
-                modal.querySelector('#view_status_badge').textContent = status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                modal.querySelector('#view_status_badge').className = 'violation-badge badge-' + status;
-                
-                // Set dates
-                modal.querySelector('#view_deadline').textContent = new Date(button.getAttribute('data-deadline')).toLocaleDateString();
-                
-                // Set amounts
-                modal.querySelector('#view_fine_amount').textContent = '₱' + parseFloat(button.getAttribute('data-fine-amount') || 0).toFixed(2);
-                modal.querySelector('#view_paid_amount').textContent = '₱' + parseFloat(button.getAttribute('data-paid-amount') || 0).toFixed(2);
-                
-                // Set payment date
-                const paymentDate = button.getAttribute('data-payment-date');
-                modal.querySelector('#view_payment_date').textContent = paymentDate ? new Date(paymentDate).toLocaleDateString() : 'N/A';
-                
-                // Set establishment info
-                modal.querySelector('#view_establishment_name').textContent = button.getAttribute('data-establishment-name');
-                modal.querySelector('#view_establishment_address').textContent = button.getAttribute('data-establishment-address');
-                modal.querySelector('#view_inspection_date').textContent = new Date(button.getAttribute('data-inspection-date')).toLocaleDateString();
-                modal.querySelector('#view_inspector_name').textContent = button.getAttribute('data-inspector-name');
-                modal.querySelector('#view_item_text').textContent = button.getAttribute('data-item-text');
-                
-                // Set resolution notes
-                const resolutionNotes = button.getAttribute('data-resolution-notes');
-                if (resolutionNotes) {
-                    modal.querySelector('#view_resolution_notes').textContent = resolutionNotes;
-                }
-            });
-        }
-        
-        // Form validation
-        const forms = document.querySelectorAll('.needs-validation');
-        
-        Array.from(forms).forEach(form => {
-            form.addEventListener('submit', event => {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                
-                form.classList.add('was-validated');
-            }, false);
-        });
-        
-        // Add form validation to modals
-        document.getElementById('addViolationForm').addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobileMenuButton');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (mobileMenuButton && sidebar) {
+                mobileMenuButton.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                });
             }
-            this.classList.add('was-validated');
-        });
-        
-        document.getElementById('editViolationForm').addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
+            
+            // Filter toggle animation
+            const filterHeader = document.querySelector('.filter-header');
+            const filterToggle = document.querySelector('.filter-toggle');
+            
+            if (filterHeader && filterToggle) {
+                filterHeader.addEventListener('click', function() {
+                    filterToggle.classList.toggle('collapsed');
+                });
             }
-            this.classList.add('was-validated');
-        });
-        
-        document.getElementById('resolveViolationForm').addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
+            
+            // View violation modal
+            const viewViolationButtons = document.querySelectorAll('.view-violation');
+            viewViolationButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modal = document.getElementById('viewViolationModal');
+                    
+                    // Populate modal with data
+                    document.getElementById('view-violation-code').textContent = this.getAttribute('data-violation-code');
+                    document.getElementById('view-description').textContent = this.getAttribute('data-description');
+                    document.getElementById('view-corrective-action').textContent = this.getAttribute('data-corrective-action');
+                    document.getElementById('view-resolution-notes').textContent = this.getAttribute('data-resolution-notes') || 'No resolution notes provided.';
+                    
+                    // Set severity badge
+                    const severity = this.getAttribute('data-severity');
+                    const severityBadge = document.getElementById('view-severity');
+                    severityBadge.textContent = severity.charAt(0).toUpperCase() + severity.slice(1);
+                    severityBadge.className = 'violation-badge badge-' + severity;
+                    
+                    // Set status badge
+                    const status = this.getAttribute('data-status');
+                    const statusBadge = document.getElementById('view-status');
+                    statusBadge.textContent = status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    statusBadge.className = 'violation-badge badge-' + status;
+                    
+                    // Set establishment info
+                    document.getElementById('view-establishment-name').textContent = this.getAttribute('data-establishment-name');
+                    document.getElementById('view-establishment-address').textContent = this.getAttribute('data-establishment-address');
+                    document.getElementById('view-inspection-date').textContent = this.getAttribute('data-inspection-date');
+                    document.getElementById('view-inspector-name').textContent = this.getAttribute('data-inspector-name');
+                    document.getElementById('view-item-text').textContent = this.getAttribute('data-item-text');
+                    
+                    // Format deadline
+                    const deadline = new Date(this.getAttribute('data-deadline'));
+                    document.getElementById('view-deadline').textContent = deadline.toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                    });
+                    
+                    // Set financial info
+                    const fineAmount = parseFloat(this.getAttribute('data-fine-amount'));
+                    const paidAmount = parseFloat(this.getAttribute('data-paid-amount'));
+                    
+                    document.getElementById('view-fine-amount').textContent = fineAmount > 0 ? '₱' + fineAmount.toFixed(2) : 'No fine';
+                    document.getElementById('view-paid-amount').textContent = paidAmount > 0 ? '₱' + paidAmount.toFixed(2) : 'Not paid';
+                    
+                    const paymentDate = this.getAttribute('data-payment-date');
+                    document.getElementById('view-payment-date').textContent = paymentDate ? 
+                        new Date(paymentDate).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                        }) : 'N/A';
+                });
+            });
+            
+            // Edit violation modal
+            const editViolationButtons = document.querySelectorAll('.edit-violation');
+            editViolationButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Populate form with data
+                    document.getElementById('edit-id').value = this.getAttribute('data-id');
+                    document.getElementById('edit-violation_code').value = this.getAttribute('data-violation-code');
+                    document.getElementById('edit-description').value = this.getAttribute('data-description');
+                    document.getElementById('edit-corrective_action').value = this.getAttribute('data-corrective-action');
+                    document.getElementById('edit-deadline').value = this.getAttribute('data-deadline');
+                    document.getElementById('edit-fine_amount').value = this.getAttribute('data-fine-amount');
+                    document.getElementById('edit-paid_amount').value = this.getAttribute('data-paid-amount');
+                    document.getElementById('edit-payment_date').value = this.getAttribute('data-payment-date');
+                    document.getElementById('edit-resolution_notes').value = this.getAttribute('data-resolution-notes') || '';
+                    
+                    // Set select values
+                    document.getElementById('edit-severity').value = this.getAttribute('data-severity');
+                    document.getElementById('edit-status').value = this.getAttribute('data-status');
+                });
+            });
+            
+            // Resolve violation modal
+            const resolveViolationButtons = document.querySelectorAll('.resolve-violation');
+            resolveViolationButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    document.getElementById('resolve-id').value = this.getAttribute('data-id');
+                    document.getElementById('resolve-violation-code').textContent = this.getAttribute('data-violation-code');
+                    document.getElementById('resolve-description').textContent = this.getAttribute('data-description');
+                });
+            });
+            
+            // Form validation
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+            
+            // Export functionality
+            const exportBtn = document.getElementById('exportBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    // Get current filter parameters
+                    const params = new URLSearchParams(window.location.search);
+                    
+                    // Redirect to export script with current filters
+                    window.location.href = 'export_violations.php?' + params.toString();
+                });
             }
-            this.classList.add('was-validated');
-        });
-        
-        // Auto-hide alerts after 5 seconds
-        setTimeout(() => {
+            
+            // Auto-hide alerts after 5 seconds
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
             });
-        }, 5000);
+        });
     </script>
 </body>
 </html>

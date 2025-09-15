@@ -4,6 +4,12 @@ session_start();
 // Include the Database Manager first
 require_once 'config/database_manager.php';
 
+// Include the Mock AI System
+require_once 'config/mock_ai_system.php';
+
+// Include the new Predictive Analytics AI
+require_once 'config/predictive_analytics_ai.php';
+
 // Check if this is an API request
 if (isset($_GET['api']) || isset($_POST['api']) || 
     (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/api/') !== false)) {
@@ -18,6 +24,10 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
+
+// Initialize the AI Systems
+$aiSystem = new MockAISystem($dbManager);
+$predictiveAI = new PredictiveAnalyticsAI($dbManager);
 
 // Set active tab and module for sidebar highlighting
 $active_tab = 'modules';
@@ -44,13 +54,113 @@ try {
         ORDER BY d.dispatched_at DESC
     ");
     
+    // Get historical data for predictive analytics
+    $historical_incidents = $dbManager->fetchAll("ird", "SELECT * FROM incidents ORDER BY created_at DESC LIMIT 1000");
+    
 } catch (Exception $e) {
     error_log("Database error: " . $e->getMessage());
     $user = ['first_name' => 'User'];
     $incidents = [];
     $units = [];
     $dispatches = [];
+    $historical_incidents = [];
     $error_message = "System temporarily unavailable. Please try again later.";
+}
+
+// Function to get AI-recommended units based on incident data and proximity
+function getAIRecommendedUnits($incidentData, $availableUnits, $aiSystem, $predictiveAI) {
+    $recommendedUnits = [];
+    
+    // Get AI analysis
+    $aiAnalysis = $aiSystem->analyzeIncident($incidentData);
+    $riskScore = $aiAnalysis['risk_score'];
+    
+    // Determine unit requirements based on incident type
+    $type = strtolower($incidentData['type']);
+    
+    // Base unit requirements
+    switch ($type) {
+        case 'fire':
+        case 'structure-fire':
+        case 'vehicle-fire':
+            $recommendedTypes = ['Fire Engine', 'Ladder Truck'];
+            if ($incidentData['people_trapped'] > 0) {
+                $recommendedTypes[] = 'Rescue Unit';
+            }
+            if ($incidentData['hazardous_materials'] > 0) {
+                $recommendedTypes[] = 'HazMat Unit';
+            }
+            if ($incidentData['injuries'] > 0) {
+                $recommendedTypes[] = 'Ambulance';
+            }
+            break;
+            
+        case 'medical':
+        case 'medical emergency':
+            $recommendedTypes = ['Ambulance'];
+            if ($incidentData['injuries'] > 2) {
+                $recommendedTypes[] = 'Additional Ambulance';
+            }
+            break;
+            
+        case 'rescue':
+            $recommendedTypes = ['Rescue Unit', 'Ambulance'];
+            break;
+            
+        case 'hazardous':
+        case 'hazardous materials':
+            $recommendedTypes = ['HazMat Unit', 'Fire Engine'];
+            break;
+            
+        default:
+            $recommendedTypes = ['Response Unit'];
+            break;
+    }
+    
+    // Adjust quantity based on risk score and severity
+    $unitMultiplier = 1;
+    if ($riskScore >= 0.8) { // Critical
+        $unitMultiplier = 3;
+    } elseif ($riskScore >= 0.6) { // High
+        $unitMultiplier = 2;
+    } elseif ($riskScore >= 0.4) { // Medium
+        $unitMultiplier = 1;
+    } else { // Low
+        $unitMultiplier = 1;
+    }
+    
+    // Adjust based on specific factors
+    if ($incidentData['people_trapped'] > 5) {
+        $unitMultiplier += 1;
+    }
+    if ($incidentData['injuries'] > 10) {
+        $unitMultiplier += 1;
+    }
+    if ($incidentData['fatalities'] > 0) {
+        $unitMultiplier += 1;
+    }
+    
+    // Get proximity-based recommendations
+    $proximityUnits = $aiSystem->getProximityBasedRecommendations($incidentData, $availableUnits);
+    
+    // Filter by recommended types and get the closest units
+    $selectedUnits = [];
+    foreach ($recommendedTypes as $type) {
+        $matchingUnits = array_filter($proximityUnits, function($item) use ($type) {
+            return strtolower($item['unit']['unit_type']) === strtolower($type);
+        });
+        
+        // Take up to unitMultiplier units of this type (closest first)
+        $count = 0;
+        foreach ($matchingUnits as $unitItem) {
+            if ($count < $unitMultiplier) {
+                $selectedUnits[] = $unitItem['unit'];
+                $count++;
+            }
+        }
+    }
+    
+    return $selectedUnits;
 }
 
 // Process form submissions
@@ -84,6 +194,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: ua.php");
             exit;
         }
+        elseif (isset($_POST['assign_ai_recommended'])) {
+            // Assign AI-recommended units to incident
+            $incident_id = $_POST['incident_id'];
+            $incident = $dbManager->fetch("ird", "SELECT * FROM incidents WHERE id = ?", [$incident_id]);
+            
+            if ($incident) {
+                $incident_data = [
+                    'type' => $incident['incident_type'],
+                    'barangay' => $incident['barangay'],
+                    'injuries' => $incident['injuries'] ?? 0,
+                    'fatalities' => $incident['fatalities'] ?? 0,
+                    'people_trapped' => $incident['people_trapped'] ?? 0,
+                    'hazardous_materials' => $incident['hazardous_materials'] ?? 0,
+                    'priority' => $incident['priority']
+                ];
+                
+                // Get AI-recommended units with proximity consideration
+                $recommendedUnits = getAIRecommendedUnits($incident_data, $units, $aiSystem, $predictiveAI);
+                
+                // Assign all recommended units
+                $assignedCount = 0;
+                foreach ($recommendedUnits as $unit) {
+                    $query = "INSERT INTO dispatches (incident_id, unit_id, dispatched_at, status) VALUES (?, ?, NOW(), 'dispatched')";
+                    $params = [$incident_id, $unit['id']];
+                    $dbManager->query("ird", $query, $params);
+                    
+                    // Update unit status
+                    $dbManager->query("ird", "UPDATE units SET status = 'dispatched' WHERE id = ?", [$unit['id']]);
+                    
+                    $assignedCount++;
+                }
+                
+                // Update incident status if units were assigned
+                if ($assignedCount > 0) {
+                    $dbManager->query("ird", "UPDATE incidents SET status = 'dispatched' WHERE id = ?", [$incident_id]);
+                    
+                    // Log the action
+                    $log_query = "INSERT INTO incident_logs (incident_id, user_id, action, details) VALUES (?, ?, ?, ?)";
+                    $dbManager->query("ird", $log_query, [
+                        $incident_id, 
+                        $_SESSION['user_id'], 
+                        'AI Units Assigned', 
+                        "AI assigned $assignedCount units to incident based on proximity and type matching"
+                    ]);
+                }
+                
+                $_SESSION['success_message'] = "AI assigned $assignedCount units to the incident based on proximity!";
+            }
+            
+            header("Location: ua.php");
+            exit;
+        }
         elseif (isset($_POST['update_status'])) {
             // Update dispatch status
             $dbManager->query("ird", "UPDATE dispatches SET status = ? WHERE id = ?", [
@@ -111,6 +273,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: ua.php");
             exit;
         }
+        elseif (isset($_POST['get_ai_recommendations'])) {
+            // Get AI recommendations for a specific incident
+            $incident_id = $_POST['incident_id'];
+            $incident = $dbManager->fetch("ird", "SELECT * FROM incidents WHERE id = ?", [$incident_id]);
+            
+            if ($incident) {
+                $incident_data = [
+                    'type' => $incident['incident_type'],
+                    'barangay' => $incident['barangay'],
+                    'injuries' => $incident['injuries'] ?? 0,
+                    'fatalities' => $incident['fatalities'] ?? 0,
+                    'people_trapped' => $incident['people_trapped'] ?? 0,
+                    'hazardous_materials' => $incident['hazardous_materials'] ?? 0,
+                    'priority' => $incident['priority']
+                ];
+                
+                // Get AI recommendations from both systems
+                $ai_recommendations = $aiSystem->analyzeIncident($incident_data);
+                $predictive_insights = $predictiveAI->analyzeIncident($incident_data, $historical_incidents);
+                
+                // Get AI-recommended units with proximity consideration
+                $ai_recommended_units = getAIRecommendedUnits($incident_data, $units, $aiSystem, $predictiveAI);
+                
+                // Get proximity-based recommendations for display
+                $proximity_recommendations = $aiSystem->getProximityBasedRecommendations($incident_data, $units);
+                
+                $_SESSION['ai_recommendations'] = $ai_recommendations;
+                $_SESSION['predictive_insights'] = $predictive_insights;
+                $_SESSION['ai_recommended_units'] = $ai_recommended_units;
+                $_SESSION['proximity_recommendations'] = $proximity_recommendations;
+                $_SESSION['recommended_incident_id'] = $incident_id;
+            }
+            
+            header("Location: ua.php");
+            exit;
+        }
     } catch (Exception $e) {
         error_log("Form submission error: " . $e->getMessage());
         $_SESSION['error_message'] = "Error processing request: " . $e->getMessage();
@@ -120,8 +318,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Display success/error messages
 $success_message = $_SESSION['success_message'] ?? '';
 $error_message = $_SESSION['error_message'] ?? '';
+$ai_recommendations = $_SESSION['ai_recommendations'] ?? null;
+$predictive_insights = $_SESSION['predictive_insights'] ?? null;
+$ai_recommended_units = $_SESSION['ai_recommended_units'] ?? null;
+$proximity_recommendations = $_SESSION['proximity_recommendations'] ?? null;
+$recommended_incident_id = $_SESSION['recommended_incident_id'] ?? null;
+
+// Clear the session variables after use
 unset($_SESSION['success_message']);
 unset($_SESSION['error_message']);
+unset($_SESSION['ai_recommendations']);
+unset($_SESSION['predictive_insights']);
+unset($_SESSION['ai_recommended_units']);
+unset($_SESSION['proximity_recommendations']);
+unset($_SESSION['recommended_incident_id']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -210,6 +420,130 @@ unset($_SESSION['error_message']);
         }
         .priority-critical {
             border-left: 4px solid #6f42c1 !important;
+        }
+        .ai-recommendation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .predictive-insights {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .proximity-recommendations {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .ai-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .ai-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            animation: pulse 2s infinite;
+        }
+        .ai-prediction {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        .prediction-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .unit-recommendation {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        .recommended-unit {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .proximity-badge {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .risk-indicator {
+            height: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            background: linear-gradient(to right, #4caf50, #ffeb3b, #f44336);
+        }
+        .risk-marker {
+            height: 15px;
+            width: 15px;
+            background: white;
+            border-radius: 50%;
+            position: relative;
+            top: -12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+        .trend-up {
+            background: rgba(255,255,255,0.2);
+            color: #ff6b6b;
+        }
+        .trend-down {
+            background: rgba(255,255,255,0.2);
+            color: #51cf66;
+        }
+        .similar-incident {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .ai-assign-btn {
+            margin-top: 15px;
+        }
+        .proximity-meter {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .proximity-fill {
+            height: 100%;
+            background: white;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -429,19 +763,39 @@ unset($_SESSION['error_message']);
                     </a>
                 </div>
                 
-                <!-- Post-Incident Analysis and Reporting -->
+                  <!-- Post-Incident Analysis and Reporting -->
                 <a class="sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#piarMenu" role="button">
                     <i class='bx bx-analyse'></i>
                     <span class="text">Post-Incident Analysis</span>
                 </a>
                 <div class="sidebar-dropdown collapse" id="piarMenu">
-                    <a href="analysis.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-line-chart'></i>
-                        <span>Incident Analysis</span>
+                    <a href="../../PIAR/incident_summary_documentation/isd.php" class="sidebar-dropdown-link">
+<i class='bx bx-file'></i>
+    <span>Incident Summary Documentation</span>
                     </a>
-                    <a href="lessons.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-book-bookmark'></i>
-                        <span>Lessons Learned</span>
+                    <a href="../../PIAR/response_timeline_tracking/rtt.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-time-five'></i>
+    <span>Response Timeline Tracking</span>
+                    </a>
+                     <a href="../../PIAR/personnel_and_unit_involvement/paui.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-group'></i>
+    <span>Personnel and Unit Involvement</span>
+                    </a>
+                     <a href="../../PIAR/cause_and_origin_investigation/caoi.php" class="sidebar-dropdown-link">
+                       <i class='bx bx-search-alt'></i>
+    <span>Cause and Origin Investigation</span>
+                    </a>
+                       <a href="../../PIAR/damage_assessment/da.php" class="sidebar-dropdown-link">
+                      <i class='bx bx-building-house'></i>
+    <span>Damage Assessment</span>
+                    </a>
+                       <a href="../../PIAR/action_review_and_lessons_learned/arall.php" class="sidebar-dropdown-link">
+                     <i class='bx bx-refresh'></i>
+    <span>Action Review and Lessons Learned</span>
+                    </a>
+                     <a href="../../PIAR/report_generation_and_archiving/rgaa.php" class="sidebar-dropdown-link">
+                     <i class='bx bx-archive'></i>
+    <span>Report Generation and Archiving</span>
                     </a>
                 </div>
                 
@@ -507,6 +861,185 @@ unset($_SESSION['error_message']);
             </div>
             <?php endif; ?>
             
+            <!-- AI Recommendations -->
+            <?php if ($ai_recommendations && $recommended_incident_id): ?>
+            <div class="row">
+                <div class="col-12">
+                    <div class="ai-recommendation animate-fade-in">
+                        <div class="ai-header">
+                            <i class='bx bx-brain ai-icon'></i>
+                            <div>
+                                <h4>AI Recommendations for Incident #<?php echo $recommended_incident_id; ?></h4>
+                                <p>Based on incident analysis and historical data</p>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="ai-prediction">
+                                    <h6>Risk Assessment</h6>
+                                    <div class="prediction-value"><?php echo $ai_recommendations['risk_level']; ?></div>
+                                    <div class="risk-indicator">
+                                        <div class="risk-marker" style="left: <?php echo $ai_recommendations['risk_score'] * 100; ?>%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="ai-prediction">
+                                    <h6>Recommended Units</h6>
+                                    <div class="prediction-value"><?php echo $ai_recommendations['recommended_units']; ?></div>
+                                    <small>Based on incident type and severity</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="ai-prediction">
+                                    <h6>Estimated Response Time</h6>
+                                    <div class="prediction-value"><?php echo $ai_recommendations['estimated_response_time']; ?> mins</div>
+                                    <small>Based on traffic and distance</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <?php if (!empty($ai_recommendations['recommended_actions'])): ?>
+                        <div class="mt-3">
+                            <h6>Recommended Actions</h6>
+                            <ul class="mb-0">
+                                <?php foreach ($ai_recommendations['recommended_actions'] as $action): ?>
+                                <li><?php echo htmlspecialchars($action); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <!-- AI Recommended Units -->
+                        <?php if (!empty($ai_recommended_units)): ?>
+                        <div class="mt-4">
+                            <h6>AI-Recommended Units for Deployment</h6>
+                            <?php foreach ($ai_recommended_units as $unit): ?>
+                            <div class="recommended-unit">
+                                <div>
+                                    <strong><?php echo htmlspecialchars($unit['unit_name']); ?></strong>
+                                    <br>
+                                    <small><?php echo htmlspecialchars($unit['unit_type']); ?> - <?php echo htmlspecialchars($unit['station']); ?></small>
+                                </div>
+                                <span class="badge bg-success">Available</span>
+                            </div>
+                            <?php endforeach; ?>
+                            
+                            <form method="POST" class="ai-assign-btn">
+                                <input type="hidden" name="incident_id" value="<?php echo $recommended_incident_id; ?>">
+                                <button type="submit" name="assign_ai_recommended" class="btn btn-light">
+                                    <i class='bx bx-check-circle'></i> Assign All Recommended Units
+                                </button>
+                            </form>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+            
+            <!-- Proximity Recommendations -->
+            <?php if ($proximity_recommendations && $recommended_incident_id): ?>
+            <div class="row">
+                <div class="col-12">
+                    <div class="proximity-recommendations animate-fade-in">
+                        <div class="ai-header">
+                            <i class='bx bx-map ai-icon'></i>
+                            <div>
+                                <h4>Proximity-Based Recommendations for Incident #<?php echo $recommended_incident_id; ?></h4>
+                                <p>Units closest to the incident location in Commonwealth</p>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <?php foreach (array_slice($proximity_recommendations, 0, 6) as $recommendation): ?>
+                            <div class="col-md-4 mb-3">
+                                <div class="unit-recommendation">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1"><?php echo htmlspecialchars($recommendation['unit']['unit_name']); ?></h6>
+                                            <p class="mb-1 small"><?php echo htmlspecialchars($recommendation['unit']['unit_type']); ?></p>
+                                            <p class="mb-0 small"><?php echo htmlspecialchars($recommendation['unit']['barangay']); ?></p>
+                                        </div>
+                                        <span class="proximity-badge">
+                                            <?php echo round($recommendation['distance_score'] * 100); ?>% match
+                                        </span>
+                                    </div>
+                                    <div class="proximity-meter">
+                                        <div class="proximity-fill" style="width: <?php echo $recommendation['distance_score'] * 100; ?>%"></div>
+                                    </div>
+                                    <small class="d-block mt-1">Estimated arrival: <?php echo $recommendation['estimated_arrival'] ?? 'N/A'; ?> mins</small>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+            
+            <!-- Predictive Insights -->
+            <?php if ($predictive_insights && $recommended_incident_id): ?>
+            <div class="row">
+                <div class="col-12">
+                    <div class="predictive-insights animate-fade-in">
+                        <div class="ai-header">
+                            <i class='bx bx-trending-up ai-icon'></i>
+                            <div>
+                                <h4>Predictive Insights for Incident #<?php echo $recommended_incident_id; ?></h4>
+                                <p>Based on historical data analysis and patterns</p>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="ai-prediction">
+                                    <h6>Similar Incidents</h6>
+                                    <div class="prediction-value"><?php echo $predictive_insights['similar_incidents_count']; ?> found</div>
+                                    <small>In the past 30 days</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="ai-prediction">
+                                    <h6>Trend Analysis</h6>
+                                    <div class="prediction-value">
+                                        <?php echo ucfirst($predictive_insights['trend_direction']); ?>
+                                        <span class="trend-indicator <?php echo $predictive_insights['trend_direction'] === 'increasing' ? 'trend-up' : 'trend-down'; ?>">
+                                            <i class='bx bx-<?php echo $predictive_insights['trend_direction'] === 'increasing' ? 'up-arrow' : 'down-arrow'; ?>'></i>
+                                            <?php echo $predictive_insights['trend_percentage']; ?>%
+                                        </span>
+                                    </div>
+                                    <small>Compared to previous period</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="ai-prediction">
+                                    <h6>Resource Prediction</h6>
+                                    <div class="prediction-value"><?php echo $predictive_insights['predicted_resource_need']; ?></div>
+                                    <small>Based on historical patterns</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <?php if (!empty($predictive_insights['similar_incidents'])): ?>
+                        <div class="mt-3">
+                            <h6>Recent Similar Incidents</h6>
+                            <?php foreach (array_slice($predictive_insights['similar_incidents'], 0, 3) as $incident): ?>
+                            <div class="similar-incident">
+                                <strong>#<?php echo $incident['id']; ?></strong> - 
+                                <?php echo htmlspecialchars($incident['incident_type']); ?> in 
+                                <?php echo htmlspecialchars($incident['barangay']); ?> - 
+                                <?php echo date('M j', strtotime($incident['created_at'])); ?>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+            
             <!-- Unit Assignment Content -->
             <div class="dashboard-content">
                 <!-- Assignment Form -->
@@ -523,7 +1056,7 @@ unset($_SESSION['error_message']);
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Select Incident <span class="text-danger">*</span></label>
-                                                <select class="form-select" name="incident_id" required>
+                                                <select class="form-select" name="incident_id" id="incident_id" required>
                                                     <option value="">Choose an incident...</option>
                                                     <?php foreach ($incidents as $incident): ?>
                                                         <option value="<?php echo $incident['id']; ?>">
@@ -553,7 +1086,10 @@ unset($_SESSION['error_message']);
                                         </div>
                                     </div>
                                     
-                                    <div class="d-flex justify-content-end">
+                                    <div class="d-flex justify-content-between">
+                                        <button type="submit" name="get_ai_recommendations" class="btn btn-outline-info">
+                                            <i class='bx bx-brain'></i> Get AI Recommendations
+                                        </button>
                                         <button type="submit" name="assign_unit" class="btn btn-primary">
                                             <i class='bx bx-send'></i> Assign Unit
                                         </button>
@@ -777,6 +1313,16 @@ unset($_SESSION['error_message']);
                 setTimeout(() => toast.remove(), 500);
             });
         }, 5000);
+        
+        // Auto-scroll to AI recommendations if they exist
+        document.addEventListener('DOMContentLoaded', function() {
+            <?php if ($ai_recommendations): ?>
+            const aiSection = document.querySelector('.ai-recommendation');
+            if (aiSection) {
+                aiSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            <?php endif; ?>
+        });
     </script>
 </body>
 </html>

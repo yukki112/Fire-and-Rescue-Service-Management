@@ -106,11 +106,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->isHTML(true);
                 $mail->Subject = 'Verify Your FRSM Account';
                 $mail->Body = "
-                    <h2>Welcome to FRSM!</h2>
-                    <p>Hello {$regData['firstName']},</p>
-                    <p>Your verification code is: <strong style='font-size: 24px; color: #DC143C;'>$verificationCode</strong></p>
-                    <p>Enter this code to complete your registration.</p>
-                    <p>This code will expire in 10 minutes.</p>
+                    <div style='background: linear-gradient(135deg, #DC143C 0%, #B91C3C 100%); padding: 32px; border-radius: 18px; color: #fff; font-family: Inter, Arial, sans-serif; box-shadow: 0 4px 24px rgba(220,20,60,0.12); max-width: 480px; margin: 0 auto;'>
+                        <div style='text-align: center; margin-bottom: 24px;'>
+                            <img src='img/frsm1.png' alt='FRSM Logo' style='width: 80px; height: 80px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 12px;'>
+                            <h2 style='margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 1px;'>Welcome to FRSM!</h2>
+                        </div>
+                        <div style='background: #fff; color: #991B1B; border-radius: 12px; padding: 24px 18px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(220,20,60,0.08);'>
+                            <p style='font-size: 16px; margin-bottom: 10px;'>Hello <strong>{$regData['firstName']}</strong>,</p>
+                            <p style='font-size: 15px; margin-bottom: 18px;'>Your verification code is:</p>
+                            <div style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #DC143C; background: #FEE2E2; border-radius: 8px; padding: 12px 0; margin-bottom: 10px; text-align: center;'>
+                                $verificationCode
+                            </div>
+                            <p style='font-size: 14px; color: #991B1B; margin-bottom: 0;'>Enter this code to complete your registration.</p>
+                        </div>
+                        <p style='font-size: 13px; color: #FEE2E2; text-align: center; margin-bottom: 0;'>This code will expire in <strong>10 minutes</strong>.</p>
+                        <hr style='border: none; border-top: 1px solid #FEE2E2; margin: 24px 0;'>
+                        <p style='font-size: 12px; color: #FEE2E2; text-align: center; margin-bottom: 0;'>If you did not request this, please ignore this email.</p>
+                    </div>
                 ";
                 
                 $mail->send();
@@ -196,7 +208,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Register - Fire and Rescue Service Management</title>
     <link rel="icon" type="image/png" href="img/frsm-logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -220,6 +231,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             --gray-700: #374151;
             --gray-800: #1F2937;
             --gray-900: #111827;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
         
         * {
@@ -235,198 +250,208 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 16px;
-            position: relative;
+            padding: 20px;
+            color: var(--gray-800);
+            line-height: 1.6;
         }
         
-        .container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 1400px;
+        .login-container {
             display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Improved responsive grid layout */
-        .auth-wrapper {
-            background: var(--white);
-            border-radius: 20px;
-            box-shadow: 
-                0 25px 50px -12px rgba(0, 0, 0, 0.25),
-                0 0 0 1px rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
             width: 100%;
-            max-width: 1200px;
-            min-height: 700px;
-            backdrop-filter: blur(20px);
-            position: relative;
+            max-width: 1000px;
+            min-height: 600px;
+            background: var(--white);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+            animation: fadeIn 0.5s ease-out;
         }
         
-        /* Left side - Branding */
-        .auth-brand {
-            background: #be013c;
-            padding: 40px 32px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .login-left {
+            flex: 1;
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 40px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
-            text-align: center;
             position: relative;
             overflow: hidden;
         }
         
-        .auth-brand::before {
+        .login-left::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="20" cy="80" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            opacity: 0.3;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
         }
         
-         /* Updated brand logo to use image instead of icon */
-        .brand-logo {
-            width: 220px;
-            height: 220px;
+        .login-left::after {
+            content: '';
+            position: absolute;
+            bottom: -80px;
+            left: -80px;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 24px;
-            position: relative;
-            overflow: hidden;
+            box-shadow: var(--shadow-lg);
         }
         
-        .brand-logo img {
-            width: 210px;
-            height: 210px;
-            object-fit: contain;
-          
+        .logo img {
+            width: 120px;
+            height: auto;
         }
         
-        .brand-title {
-            font-size: 36px;
-            font-weight: 800;
-            color: var(--white);
-            margin-bottom: 12px;
-            letter-spacing: -0.02em;
+        .welcome-text h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
-        .brand-subtitle {
+        .welcome-text p {
             font-size: 16px;
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.5;
-            max-width: 280px;
             font-weight: 400;
+            opacity: 0.9;
+            max-width: 300px;
+            margin: 0 auto;
         }
         
-        .brand-stats {
-            margin-top: 32px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            width: 100%;
-            max-width: 240px;
+        .features {
+            margin-top: 40px;
         }
         
-        .stat-item {
-            text-align: center;
-            color: var(--white);
+        .feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
         }
         
-        .stat-number {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 4px;
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
         }
         
-        .stat-label {
-            font-size: 11px;
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .feature-text {
+            font-size: 14px;
+            font-weight: 500;
         }
         
-        /* Right side - Registration form */
-        .auth-form-section {
-            padding: 40px 32px;
+        .login-right {
+            flex: 1;
+            padding: 40px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             background: var(--white);
-            position: relative;
             overflow-y: auto;
         }
         
-        .form-header {
-            margin-bottom: 32px;
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
         }
         
-        .form-title {
-            font-size: 28px;
+        .login-header h2 {
+            font-size: 24px;
             font-weight: 700;
-            color: var(--gray-900);
-            margin-bottom: 6px;
-            letter-spacing: -0.02em;
+            color: var(--dark);
+            margin-bottom: 10px;
         }
         
-        .form-subtitle {
-            font-size: 15px;
+        .login-header p {
             color: var(--gray-500);
-            font-weight: 400;
+            font-size: 14px;
         }
         
-        /* Improved responsive form grid */
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--gray-700);
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            z-index: 1;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid var(--gray-300);
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: var(--gray-50);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            cursor: pointer;
+            z-index: 2;
+        }
+        
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
-            margin-bottom: 16px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-        
-        .form-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--gray-700);
-            margin-bottom: 6px;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid var(--gray-200);
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 400;
-            background: var(--gray-50);
-            transition: all 0.2s ease;
-            color: var(--gray-900);
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-red);
-            background: var(--white);
-            box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
-        }
-        
-        .form-input::placeholder {
-            color: var(--gray-400);
         }
         
         .form-hint {
@@ -435,703 +460,691 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-top: 4px;
         }
         
-        .btn-primary {
+        .btn-login {
             width: 100%;
-            padding: 14px 20px;
+            padding: 14px;
             background: var(--gradient-secondary);
             color: var(--white);
             border: none;
             border-radius: 10px;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
-            position: relative;
-            overflow: hidden;
-            margin-top: 6px;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-md);
         }
         
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s ease;
+        .btn-login:hover {
+            background: var(--dark-red);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
         }
         
-        .btn-primary:hover::before {
-            left: 100%;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(220, 20, 60, 0.4);
-        }
-        
-        .btn-primary:active {
+        .btn-login:active {
             transform: translateY(0);
         }
         
-        .auth-switch {
+        .register-link {
             text-align: center;
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 1px solid var(--gray-200);
-        }
-        
-        .auth-switch-text {
-            color: var(--gray-500);
-            font-size: 13px;
-        }
-        
-        .auth-switch-link {
-            color: var(--primary-red);
-            text-decoration: none;
-            font-weight: 600;
-            margin-left: 4px;
-            transition: color 0.2s ease;
-        }
-        
-        .auth-switch-link:hover {
-            color: var(--secondary-red);
-        }
-        
-        /* Alert messages */
-        .alert {
-            padding: 14px 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            font-weight: 500;
-            border-left: 4px solid;
-        }
-        
-        .alert-error {
-            background: #FEF2F2;
-            color: #991B1B;
-            border-left-color: #DC2626;
-        }
-        
-        .alert-success {
-            background: #F0FDF4;
-            color: #166534;
-            border-left-color: #16A34A;
-            text-align: center;
-        }
-        
-        .alert-success h3 {
-            margin-bottom: 6px;
-            font-size: 15px;
-        }
-        
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-        }
-        
-        .modal-content {
-            background: var(--white);
-            margin: 3% auto;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            overflow: hidden;
-            animation: modalSlideIn 0.3s ease;
-        }
-        
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-30px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        
-        .modal-header {
-            background: var(--gradient-primary);
-            color: var(--white);
-            padding: 20px 24px;
-            text-align: center;
-        }
-        
-        .modal-header h3 {
-            font-size: 20px;
-            font-weight: 600;
-            margin: 0;
-        }
-        
-        .modal-body {
-            padding: 24px;
-            text-align: center;
-        }
-        
-        .verification-methods {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin: 24px 0;
-        }
-        
-        .verification-option {
-            padding: 20px 16px;
-            border: 2px solid var(--gray-200);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-            background: var(--gray-50);
-        }
-        
-        .verification-option:hover {
-            border-color: var(--primary-red);
-            background: var(--white);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(220, 20, 60, 0.1);
-        }
-        
-        .verification-option.selected {
-            border-color: var(--primary-red);
-            background: rgba(220, 20, 60, 0.05);
-        }
-        
-        .verification-option i {
-            font-size: 28px;
-            color: var(--primary-red);
-            margin-bottom: 10px;
-            display: block;
-        }
-        
-        .verification-option-title {
-            font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: 3px;
+            margin-top: 30px;
             font-size: 14px;
+            color: var(--gray-600);
         }
         
-        .verification-option-desc {
-            font-size: 11px;
-            color: var(--gray-500);
-        }
-        
-        .verification-code-input {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin: 24px 0;
-        }
-        
-        .verification-code-input input {
-            width: 48px;
-            height: 48px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: 700;
-            border: 2px solid var(--gray-200);
-            border-radius: 10px;
-            background: var(--gray-50);
-            color: var(--gray-900);
-            transition: all 0.2s ease;
-        }
-        
-        .verification-code-input input:focus {
-            border-color: var(--primary-red);
-            background: var(--white);
-            box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
-            outline: none;
-        }
-        
-        .resend-section {
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid var(--gray-200);
-            color: var(--gray-500);
-            font-size: 13px;
-        }
-        
-        .resend-link {
+        .register-link a {
             color: var(--primary-red);
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
         }
         
-        .resend-link:hover {
+        .register-link a:hover {
             text-decoration: underline;
         }
         
-        .btn-secondary {
-            padding: 10px 16px;
-            background: var(--gray-200);
-            color: var(--gray-700);
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 500;
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .alert-error {
+            background-color: var(--light-red);
+            color: var(--dark-red);
+            border: 1px solid #FECACA;
+        }
+        
+        .alert-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+        
+        .alert-icon {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        .verification-container {
+            text-align: center;
+        }
+        
+        .verification-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--dark);
+        }
+        
+        .verification-subtitle {
+            color: var(--gray-500);
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+        
+        .verification-method {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .method-card {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-right: 10px;
+            transition: all 0.3s;
+            text-align: center;
         }
         
-        .btn-secondary:hover {
-            background: var(--gray-300);
+        .method-card:hover {
+            border-color: var(--primary-red);
+            box-shadow: var(--shadow-md);
         }
         
-        /* Enhanced responsive design with better breakpoints */
-        @media (max-width: 1024px) {
-            .auth-wrapper {
-                grid-template-columns: 1fr;
-                max-width: 500px;
-                min-height: auto;
-            }
-            
-            .auth-brand {
-                padding: 32px 24px;
-            }
-            
-             .brand-logo {
-                width: 140px;
-                height: 140px;
-                margin-bottom: 20px;
-            }
-            
-            .brand-logo img {
-                width: 130px;
-                height: 130px;
-            }
-            
-            .brand-title {
-                font-size: 28px;
-            }
-            
-            .brand-subtitle {
-                font-size: 15px;
-            }
-            
-            .brand-stats {
-                margin-top: 24px;
-                max-width: 200px;
-            }
+        .method-card.selected {
+            border-color: var(--primary-red);
+            background-color: rgba(220, 20, 60, 0.05);
+        }
+        
+        .method-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            color: var(--primary-red);
+        }
+        
+        .method-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .method-description {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+        
+        .verification-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .verification-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            border: 2px solid var(--gray-300);
+            border-radius: 10px;
+            background: var(--gray-50);
+            transition: all 0.3s;
+        }
+        
+        .verification-input:focus {
+            border-color: var(--primary-red);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            text-decoration: none;
+            font-weight: 500;
+            border-radius: 8px;
+            border: 1px solid var(--gray-300);
+            transition: all 0.3s;
+            margin-top: 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .back-button i {
+            margin-right: 8px;
+        }
+        
+        .back-button:hover {
+            background: var(--gray-200);
+            border-color: var(--gray-400);
+        }
+        
+        /* Enhanced Loading screen styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .fire-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 25px;
+        }
+        
+        .fire-back {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #ff8c00 0%, #ff4500 70%, #dc143c 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 40px 15px #ff4500, 0 0 80px 20px #dc143c;
+            animation: pulse 1.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        }
+        
+        .fire-front {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ffff00 0%, #ff8c00 70%, #ff4500 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 30px 10px #ffff00;
+        }
+        
+        .flame {
+            position: absolute;
+            background: linear-gradient(to top, transparent 0%, #ffff00 30%, #ff8c00 70%, #ff4500 100%);
+            border-radius: 50% 50% 20% 20%;
+            opacity: 0.8;
+            animation: flicker 1s infinite alternate;
+        }
+        
+        .flame-1 {
+            width: 25px;
+            height: 45px;
+            top: 15px;
+            left: 30px;
+            transform: translateX(-50%) rotate(-5deg);
+            animation-delay: 0.1s;
+        }
+        
+        .flame-2 {
+            width: 20px;
+            height: 40px;
+            top: 20px;
+            left: 50px;
+            transform: translateX(-50%) rotate(5deg);
+            animation-delay: 0.3s;
+        }
+        
+        .flame-3 {
+            width: 22px;
+            height: 42px;
+            top: 18px;
+            left: 70px;
+            transform: translateX(-50%) rotate(-3deg);
+            animation-delay: 0.2s;
+        }
+        
+        .flame-4 {
+            width: 18px;
+            height: 38px;
+            top: 22px;
+            left: 90px;
+            transform: translateX(-50%) rotate(2deg);
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes flicker {
+            0% { height: 40px; opacity: 0.8; }
+            25% { height: 42px; opacity: 0.9; }
+            50% { height: 38px; opacity: 0.7; }
+            75% { height: 43px; opacity: 0.9; }
+            100% { height: 41px; opacity: 0.8; }
+        }
+        
+        .spark {
+            position: absolute;
+            background: #ffff00;
+            border-radius: 50%;
+            opacity: 0;
+            animation: spark 1.5s infinite;
+        }
+        
+        @keyframes spark {
+            0% { transform: translate(0, 0) scale(0); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0.5); opacity: 0; }
+        }
+        
+        .loading-text {
+            color: white;
+            font-size: 18px;
+            font-weight: 500;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 140, 0, 0.8);
+            margin-top: 20px;
+        }
+        
+        .loading-subtext {
+            color: #ffa500;
+            font-size: 14px;
+            margin-top: 10px;
+            opacity: 0.9;
         }
         
         @media (max-width: 768px) {
-            body {
-                padding: 12px;
-            }
-            
-            .auth-wrapper {
-                border-radius: 16px;
+            .login-container {
+                flex-direction: column;
+                max-width: 100%;
                 min-height: auto;
             }
             
-            .auth-brand {
-                padding: 24px 20px;
+            .login-left {
+                padding: 30px 20px;
+                order: 2;
             }
             
-            .auth-form-section {
-                padding: 32px 20px;
-            }
-            
-            .form-title {
-                font-size: 24px;
+            .login-right {
+                padding: 30px 20px;
+                order: 1;
             }
             
             .form-grid {
                 grid-template-columns: 1fr;
-                gap: 12px;
             }
             
-            .verification-methods {
-                grid-template-columns: 1fr;
-                gap: 12px;
+            .verification-method {
+                flex-direction: column;
             }
             
-            .verification-code-input {
-                gap: 8px;
+            .fire-container {
+                width: 100px;
+                height: 100px;
             }
             
-            .verification-code-input input {
-                width: 44px;
-                height: 44px;
-                font-size: 18px;
-            }
-            
-            .brand-stats {
-                display: none;
-            }
-            
-            .modal-content {
-                margin: 10% auto;
-                width: 95%;
-            }
-            
-            .modal-body {
-                padding: 20px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .auth-form-section {
-                padding: 24px 16px;
-            }
-            
-            .auth-brand {
-                padding: 20px 16px;
-            }
-            
-            .form-input {
-                padding: 12px 14px;
-                font-size: 14px;
-            }
-            
-            .btn-primary {
-                padding: 12px 16px;
-                font-size: 14px;
-            }
-            
-            .verification-code-input input {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
+            .flame {
+                transform-origin: bottom center;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="auth-wrapper">
-            <!-- Branding Section -->
-            <div class="auth-brand">
-                <!-- Replaced icon with image logo -->
-                <div class="brand-logo">
-                    <img src="img/frsmse.png" alt="FRSM Logo">
+    <!-- Enhanced Loading Overlay with Fire Spinner -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="fire-container">
+            <div class="fire-back"></div>
+            <div class="fire-front"></div>
+            <div class="flame flame-1"></div>
+            <div class="flame flame-2"></div>
+            <div class="flame flame-3"></div>
+            <div class="flame flame-4"></div>
+            
+            <!-- Spark elements will be generated by JavaScript -->
+        </div>
+        <div class="loading-text">Igniting Your Account</div>
+        <div class="loading-subtext">Please wait while we process your request...</div>
+    </div>
+    
+    <div class="login-container">
+        <!-- Left side with branding -->
+        <div class="login-left">
+            <div class="logo-container">
+                <div class="logo">
+                    <img src="img/frsm1.png" alt="FRSM Logo">
                 </div>
-                <h1 class="brand-title">FRSM</h1>
-                <p class="brand-subtitle">Fire and Rescue Service Management System - Join our mission to protect and serve</p>
-                
-                <div class="brand-stats">
-                    <div class="stat-item">
-                        <div class="stat-number">24/7</div>
-                        <div class="stat-label">Service</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">100%</div>
-                        <div class="stat-label">Secure</div>
-                    </div>
+                <div class="welcome-text">
+                    <h1>Create Your Account</h1>
+                    <p>Join the Fire and Rescue Service Management System</p>
                 </div>
             </div>
             
-            <!-- Registration Form Section -->
-            <div class="auth-form-section">
-                <div class="form-header">
-                    <h2 class="form-title">Create Account</h2>
-                    <p class="form-subtitle">Join the FRSM system today</p>
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="feature-text">
+                        Secure account management with advanced encryption
+                    </div>
                 </div>
-                
-                <?php if (!empty($errors)): ?>
-                    <div class="alert alert-error">
-                        <?php foreach ($errors as $error): ?>
-                            <p><?php echo htmlspecialchars($error); ?></p>
-                        <?php endforeach; ?>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
                     </div>
-                <?php endif; ?>
-                
-                <?php if ($success): ?>
-                    <div class="alert alert-success animate__animated animate__fadeIn">
-                        <h3><i class="fas fa-check-circle" style="color: #16A34A; margin-right: 8px;"></i>Registration Successful!</h3>
-                        <p>Your account has been created successfully. Redirecting to login page...</p>
+                    <div class="feature-text">
+                        Instant alerts and notifications for emergency responses
                     </div>
-                <?php endif; ?>
-                
-                <?php if (!isset($_SESSION['verification_pending']) || !$_SESSION['verification_pending']): ?>
-                    <form id="registrationForm" method="POST" action="">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="firstName" class="form-label">First Name</label>
-                                <input type="text" id="firstName" name="firstName" class="form-input" 
-                                       placeholder="Juan" value="<?php echo htmlspecialchars($firstName); ?>" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="lastName" class="form-label">Last Name</label>
-                                <input type="text" id="lastName" name="lastName" class="form-input" 
-                                       placeholder="Dela Cruz" value="<?php echo htmlspecialchars($lastName); ?>" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="middleName" class="form-label">Middle Name (Optional)</label>
-                            <input type="text" id="middleName" name="middleName" class="form-input" 
-                                   placeholder="Santos" value="<?php echo htmlspecialchars($middleName); ?>">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" id="username" name="username" class="form-input" 
-                                   placeholder="juan123" value="<?php echo htmlspecialchars($username); ?>" required>
-                            <div class="form-hint">4-20 characters, letters, numbers and underscores only</div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="email" class="form-label">Email Address</label>
-                            <input type="email" id="email" name="email" class="form-input" 
-                                   placeholder="juan.delacruz@example.com" value="<?php echo htmlspecialchars($email); ?>" required>
-                        </div>
-                        
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" id="password" name="password" class="form-input" 
-                                       placeholder="Create a password" required>
-                                <div class="form-hint">At least 8 characters</div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                                <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" 
-                                       placeholder="Confirm your password" required>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="btn-primary">
-                            Create Account
-                        </button>
-                    </form>
-                <?php endif; ?>
-                
-                <div class="auth-switch">
-                    <span class="auth-switch-text">Already have an account?</span>
-                    <a href="login.php" class="auth-switch-link">Sign in</a>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <div class="feature-text">
+                        Real-time incident tracking and management
+                    </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Right side with form -->
+        <div class="login-right">
+            <?php if ($success): ?>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle alert-icon"></i>
+                    Registration successful! Redirecting to login page...
+                </div>
+            <?php endif; ?>
+            
+            <?php if (!empty($errors)): ?>
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    <?php echo $errors[0]; ?>
+                </div>
+            <?php endif; ?>
+            
+            <?php if (isset($_SESSION['verification_error'])): ?>
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    <?php echo $_SESSION['verification_error']; unset($_SESSION['verification_error']); ?>
+                </div>
+            <?php endif; ?>
+            
+            <?php if ($emailError): ?>
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    Failed to send verification email. Please try SMS verification instead.
+                </div>
+            <?php endif; ?>
+            
+            <?php if (isset($_SESSION['verification_pending']) && !$verificationSent): ?>
+                <!-- Verification method selection -->
+                <div class="verification-container">
+                    <h2 class="verification-title">Verify Your Account</h2>
+                    <p class="verification-subtitle">Choose how you'd like to receive your verification code</p>
+                    
+                    <form method="POST" id="verificationMethodForm">
+                        <div class="verification-method">
+                            <label class="method-card <?php echo $verificationMethod === 'email' ? 'selected' : ''; ?>">
+                                <input type="radio" name="verification_method" value="email" style="display: none;" <?php echo $verificationMethod === 'email' ? 'checked' : ''; ?> required>
+                                <div class="method-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="method-name">Email</div>
+                                <div class="method-description">Send code to your email address</div>
+                            </label>
+                            
+                            <label class="method-card <?php echo $verificationMethod === 'sms' ? 'selected' : ''; ?>">
+                                <input type="radio" name="verification_method" value="sms" style="display: none;" <?php echo $verificationMethod === 'sms' ? 'checked' : ''; ?>>
+                                <div class="method-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="method-name">SMS</div>
+                                <div class="method-description">Text code to your phone</div>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn-login" onclick="showLoading()">Send Verification Code</button>
+                    </form>
+                    
+                    <form method="POST">
+                        <button type="submit" name="back_to_register" class="back-button">
+                            <i class="fas fa-arrow-left"></i> Back to registration
+                        </button>
+                    </form>
+                </div>
+            <?php elseif (isset($_SESSION['verification_pending']) && $verificationSent): ?>
+                <!-- Verification code input -->
+                <div class="verification-container">
+                    <h2 class="verification-title">Enter Verification Code</h2>
+                    <p class="verification-subtitle">We sent a 6-digit code to your <?php echo $verificationMethod; ?></p>
+                    
+                    <form method="POST" id="verificationCodeForm">
+                        <div class="verification-inputs">
+                            <?php for ($i = 0; $i < 6; $i++): ?>
+                                <input type="text" class="verification-input" name="verification_code[]" maxlength="1" required 
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length) this.nextElementSibling.focus();"
+                                    onkeyup="if(event.key === 'Backspace' && !this.value) this.previousElementSibling.focus()">
+                            <?php endfor; ?>
+                        </div>
+                        
+                        <button type="submit" name="verify_code" class="btn-login" onclick="showLoading()">Verify & Create Account</button>
+                    </form>
+                    
+                    <form method="POST">
+                        <button type="submit" name="back_to_register" class="back-button">
+                            <i class="fas fa-arrow-left"></i> Back to registration
+                        </button>
+                    </form>
+                </div>
+            <?php else: ?>
+                <!-- Registration form -->
+                <div class="login-header">
+                    <h2>Create Account</h2>
+                    <p>Fill in your details to register for an account</p>
+                </div>
+                
+                <form method="POST" id="registrationForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="firstName">First Name *</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-user input-icon"></i>
+                                <input type="text" class="form-control" id="firstName" name="firstName" value="<?php echo htmlspecialchars($firstName); ?>" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastName">Last Name *</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-user input-icon"></i>
+                                <input type="text" class="form-control" id="lastName" name="lastName" value="<?php echo htmlspecialchars($lastName); ?>" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="middleName">Middle Name (Optional) </label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" class="form-control" id="middleName" name="middleName" value="<?php echo htmlspecialchars($middleName); ?>">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="username">Username *</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-at input-icon"></i>
+                            <input type="text" class="form-control" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" required>
+                        </div>
+                        <p class="form-hint">4+ characters, letters, numbers and underscores only</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <span class="password-toggle" onclick="togglePassword('password')">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                        <p class="form-hint">Password must be at least 8 characters and include uppercase, lowercase, number, and symbol</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password *</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            <span class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-login" onclick="showLoading()">Register</button>
+                </form>
+                
+                <div class="register-link">
+                    Already have an account? <a href="login.php">Sign in here</a>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
-    <!-- Verification Modal -->
-    <?php if (isset($_SESSION['verification_pending']) && $_SESSION['verification_pending']): ?>
-        <div class="modal" id="verificationModal" style="display: flex;">
-            <div class="modal-content animate__animated animate__fadeInUp">
-                <div class="modal-header">
-                    <h3><i class="fas fa-shield-check" style="margin-right: 8px;"></i>Verify Your Account</h3>
-                </div>
-                <div class="modal-body">
-                    <?php if (isset($_SESSION['verification_error'])): ?>
-                        <div class="alert alert-error" style="margin-bottom: 20px;">
-                            <p><?php echo htmlspecialchars($_SESSION['verification_error']); ?></p>
-                            <?php unset($_SESSION['verification_error']); ?>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <?php if (!$verificationSent): ?>
-                        <p style="margin-bottom: 20px; color: var(--gray-600); line-height: 1.5;">
-                            Choose how you'd like to receive your verification code:
-                        </p>
-                        
-                        <form method="POST" action="">
-                            <div class="verification-methods">
-                                <label class="verification-option" onclick="selectMethod(this, 'email')">
-                                    <input type="radio" name="verification_method" value="email" style="display: none;">
-                                    <i class="fas fa-envelope"></i>
-                                    <div class="verification-option-title">Email</div>
-                                    <div class="verification-option-desc">Receive code via email</div>
-                                </label>
-                                
-                                <label class="verification-option" onclick="selectMethod(this, 'sms')">
-                                    <input type="radio" name="verification_method" value="sms" style="display: none;">
-                                    <i class="fas fa-mobile-alt"></i>
-                                    <div class="verification-option-title">SMS</div>
-                                    <div class="verification-option-desc">Receive code via text</div>
-                                </label>
-                            </div>
-                            
-                            <button type="submit" class="btn-primary" id="sendCodeBtn" disabled 
-                                    style="width: auto; padding: 10px 20px; margin-right: 10px;">
-                                Send Verification Code
-                            </button>
-                            
-                            <form method="POST" action="" style="display: inline;">
-                                <input type="hidden" name="back_to_register" value="1">
-                                <button type="submit" class="btn-secondary">Back to Registration</button>
-                            </form>
-                        </form>
-                    <?php else: ?>
-                        <?php if ($emailError): ?>
-                            <div class="alert alert-error" style="margin-bottom: 20px;">
-                                <p>Failed to send verification email. Please try SMS verification or check your email address.</p>
-                            </div>
-                            
-                            <form method="POST" action="">
-                                <div class="verification-methods">
-                                    <label class="verification-option selected" onclick="selectMethod(this, 'sms')">
-                                        <input type="radio" name="verification_method" value="sms" style="display: none;" checked>
-                                        <i class="fas fa-mobile-alt"></i>
-                                        <div class="verification-option-title">Try SMS Verification</div>
-                                        <div class="verification-option-desc">Alternative verification method</div>
-                                    </label>
-                                </div>
-                                
-                                <button type="submit" class="btn-primary" style="width: auto; padding: 10px 20px; margin-right: 10px;">
-                                    Send SMS Code
-                                </button>
-                                
-                                <form method="POST" action="" style="display: inline;">
-                                    <input type="hidden" name="back_to_register" value="1">
-                                    <button type="submit" class="btn-secondary">Back to Registration</button>
-                                </form>
-                            </form>
-                        <?php else: ?>
-                            <p style="margin-bottom: 20px; color: var(--gray-600); line-height: 1.5;">
-                                We sent a 6-digit verification code to your <?php echo $verificationMethod === 'email' ? 'email' : 'phone'; ?>.
-                                Please enter it below:
-                            </p>
-                            
-                            <form method="POST" action="" id="verificationForm">
-                                <div class="verification-code-input">
-                                    <input type="text" name="verification_code[]" maxlength="1" pattern="[0-9]" oninput="moveToNext(this)">
-                                    <input type="text" name="verification_code[]" maxlength="1" pattern="[0-9]" oninput="moveToNext(this)">
-                                    <input type="text" name="verification_code[]" maxlength="1" pattern="[0-9]" oninput="moveToNext(this)">
-                                    <input type="text" name="verification_code[]" maxlength="1" pattern="[0-9]" oninput="moveToNext(this)">
-                                    <input type="text" name="verification_code[]" maxlength="1" pattern="[0-9]" oninput="moveToNext(this)">
-                                    <input type="text" name="verification_code[]" maxlength="1" pattern="[0-9]" oninput="moveToNext(this)">
-                                </div>
-                                
-                                <input type="hidden" name="verify_code" value="1">
-                                
-                                <button type="submit" class="btn-primary" id="verifyBtn" 
-                                        style="width: auto; padding: 10px 20px; margin-right: 10px;">
-                                    Verify Account
-                                </button>
-                                
-                                <form method="POST" action="" style="display: inline;">
-                                    <input type="hidden" name="back_to_register" value="1">
-                                    <button type="submit" class="btn-secondary">Back to Registration</button>
-                                </form>
-                                
-                                <div class="resend-section">
-                                    Didn't receive a code? <a href="#" onclick="resendCode()" class="resend-link">Resend code</a>
-                                </div>
-                            </form>
-                        <?php endif; ?>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
-
     <script>
-        // Enhanced form validation
-        document.getElementById('registrationForm')?.addEventListener('submit', function(e) {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const username = document.getElementById('username').value;
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleIcon = passwordInput.nextElementSibling.querySelector('i');
             
-            if (password !== confirmPassword) {
-                e.preventDefault();
-                showAlert('Passwords do not match', 'error');
-                return false;
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
             }
-            
-            if (password.length < 8) {
-                e.preventDefault();
-                showAlert('Password must be at least 8 characters long', 'error');
-                return false;
-            }
-            
-            if (username.length < 4) {
-                e.preventDefault();
-                showAlert('Username must be at least 4 characters long', 'error');
-                return false;
-            }
-            
-            return true;
+        }
+        
+        // Show loading screen
+        function showLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('active');
+            createSparks();
+        }
+        
+        // Hide loading screen when page is fully loaded
+        window.addEventListener('load', function() {
+            document.getElementById('loadingOverlay').classList.remove('active');
         });
-
-        // Verification method selection
-        function selectMethod(element, method) {
-            document.querySelectorAll('.verification-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
+        
+        // Create spark elements for the fire animation
+        function createSparks() {
+            const fireContainer = document.querySelector('.fire-container');
+            // Remove existing sparks
+            document.querySelectorAll('.spark').forEach(spark => spark.remove());
             
-            element.classList.add('selected');
-            element.querySelector('input[type="radio"]').checked = true;
-            document.getElementById('sendCodeBtn').disabled = false;
-        }
-
-        // Enhanced verification code input
-        function moveToNext(current) {
-            if (current.value.length === 1) {
-                const next = current.nextElementSibling;
-                if (next && next.tagName === 'INPUT') {
-                    next.focus();
-                }
+            // Create new sparks
+            for (let i = 0; i < 15; i++) {
+                const spark = document.createElement('div');
+                spark.className = 'spark';
+                
+                // Random position and animation values
+                const tx = (Math.random() * 100 - 50) + 'px';
+                const ty = (Math.random() * -80 - 20) + 'px';
+                const size = Math.random() * 6 + 2;
+                const delay = Math.random() * 1.5;
+                
+                spark.style.cssText = `
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${Math.random() * 100 + 10}px;
+                    top: ${Math.random() * 40 + 60}px;
+                    --tx: ${tx};
+                    --ty: ${ty};
+                    animation-delay: ${delay}s;
+                `;
+                
+                fireContainer.appendChild(spark);
             }
-            
-            // Auto-submit when all fields are filled
-            const inputs = document.querySelectorAll('.verification-code-input input');
-            const allFilled = Array.from(inputs).every(input => input.value.length === 1);
-            if (allFilled) {
-                setTimeout(() => {
-                    document.getElementById('verificationForm').submit();
-                }, 500);
-            }
         }
-
-        // Resend verification code
-        function resendCode() {
-            window.location.reload();
-        }
-
-        // Alert system
-        function showAlert(message, type) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type}`;
-            alertDiv.innerHTML = `<p>${message}</p>`;
-            
-            const form = document.getElementById('registrationForm');
-            form.parentNode.insertBefore(alertDiv, form);
-            
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
-        }
-
-        // Enhanced form interactions
-        document.querySelectorAll('.form-input').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.classList.add('focused');
-            });
-            
-            input.addEventListener('blur', function() {
-                this.parentElement.classList.remove('focused');
-            });
-        });
-
-        // Auto-focus first verification input
+        
+        // Auto-advance verification code inputs
         document.addEventListener('DOMContentLoaded', function() {
-            const firstInput = document.querySelector('.verification-code-input input');
-            if (firstInput) {
-                firstInput.focus();
+            const verificationInputs = document.querySelectorAll('.verification-input');
+            
+            if (verificationInputs.length > 0) {
+                verificationInputs[0].focus();
+                
+                verificationInputs.forEach((input, index) => {
+                    input.addEventListener('input', function() {
+                        if (this.value.length === 1 && index < verificationInputs.length - 1) {
+                            verificationInputs[index + 1].focus();
+                        }
+                    });
+                    
+                    input.addEventListener('keydown', function(e) {
+                        if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                            verificationInputs[index - 1].focus();
+                        }
+                    });
+                });
             }
+            
+            // Method selection
+            const methodCards = document.querySelectorAll('.method-card');
+            methodCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    methodCards.forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    this.querySelector('input[type="radio"]').checked = true;
+                });
+            });
+            
+            // Add loading screen to form submissions
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    showLoading();
+                });
+            });
         });
-
-        // Prevent form resubmission on page refresh
-        if (window.history.replaceState) {
-            window.history.replaceState(null, null, window.location.href);
-        }
     </script>
 </body>
 </html>

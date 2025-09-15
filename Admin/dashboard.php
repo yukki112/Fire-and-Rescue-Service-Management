@@ -743,14 +743,48 @@ unset($_SESSION['error_message']);
                     <span class="text">Post-Incident Analysis</span>
                 </a>
                 <div class="sidebar-dropdown collapse <?php echo $active_module == 'piar' ? 'show' : ''; ?>" id="piarMenu">
-                    <a href="analysis.php" class="sidebar-dropdown-link <?php echo $active_submodule == 'analysis' ? 'active' : ''; ?>">
-                        <i class='bx bx-line-chart'></i>
-                        <span>Incident Analysis</span>
-                    </a>
-                    <a href="lessons.php" class="sidebar-dropdown-link <?php echo $active_submodule == 'lessons' ? 'active' : ''; ?>">
-                        <i class='bx bx-book-bookmark'></i>
-                        <span>Lessons Learned</span>
-                    </a>
+                  <a href="PIAR/incident_summary_documentation/isd.php" 
+   class="sidebar-dropdown-link <?php echo $active_submodule == 'isd' ? 'active' : ''; ?>">
+    <i class='bx bx-file'></i>
+    <span>Incident Summary Documentation</span>
+</a>
+
+<a href="PIAR/response_timeline_tracking/rtt.php" 
+   class="sidebar-dropdown-link <?php echo $active_submodule == 'rtt' ? 'active' : ''; ?>">
+    <i class='bx bx-time-five'></i>
+    <span>Response Timeline Tracking</span>
+</a>
+
+<a href="PIAR/personnel_and_unit_involvement/paui.php" 
+   class="sidebar-dropdown-link <?php echo $active_submodule == 'paui' ? 'active' : ''; ?>">
+    <i class='bx bx-group'></i>
+    <span>Personnel and Unit Involvement</span>
+</a>
+
+<a href="PIAR/cause_and_origin_investigation/caoi.php" 
+   class="sidebar-dropdown-link <?php echo $active_submodule == 'caoi' ? 'active' : ''; ?>">
+    <i class='bx bx-search-alt'></i>
+    <span>Cause and Origin Investigation</span>
+</a>
+
+<a href="PIAR/damage_assessment/da.php" 
+   class="sidebar-dropdown-link <?php echo $active_submodule == 'da' ? 'active' : ''; ?>">
+    <i class='bx bx-building-house'></i>
+    <span>Damage Assessment</span>
+</a>
+
+<a href="PIAR/action_review_and_lessons_learned/arall.php" 
+   class="sidebar-dropdown-link <?php echo $active_submodule == 'arall' ? 'active' : ''; ?>">
+    <i class='bx bx-refresh'></i>
+    <span>Action Review and Lessons Learned</span>
+</a>
+
+<a href="PIAR/report_generation_and_archiving/rgaa.php" 
+   class="sidebar-dropdown-link <?php echo $active_submodule == 'rgaa' ? 'active' : ''; ?>">
+    <i class='bx bx-archive'></i>
+    <span>Report Generation and Archiving</span>
+</a>
+
                 </div>
                 
                 <div class="sidebar-section">System</div>

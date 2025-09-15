@@ -5,52 +5,52 @@ if (!class_exists('DatabaseManager')) {
         private $connections = [];
         private $config = [
             'ird' => [
-                'host' => 'localhost:3307',
-                'dbname' => 'ird',
-                'username' => 'root',
-                'password' => ''
+                'host' => 'localhost',
+                'dbname' => 'frsm_ird',
+                'username' => 'frsm_ird',
+                'password' => 'Admin123'
             ],
             'frsm' => [
-                'host' => 'localhost:3307',
-                'dbname' => 'frsm',
-                'username' => 'root',
-                'password' => ''
+                'host' => 'localhost',
+                'dbname' => 'frsm_frsm',
+                'username' => 'frsm_frsm',
+                'password' => 'Admin123'
             ],
             'ficr' => [
-                'host' => 'localhost:3307',
-                'dbname' => 'ficr',
-                'username' => 'root',
-                'password' => ''
+                'host' => 'localhost',
+                'dbname' => 'frsm_ficr',
+                'username' => 'frsm_ficr',
+                'password' => 'Admin123'
             ],
             'fsiet' => [
-                'host' => 'localhost:3307',
-                'dbname' => 'fsiet',
-                'username' => 'root',
-                'password' => ''
+                'host' => 'localhost',
+                'dbname' => 'frsm_fsiet',
+                'username' => 'frsm_fsiet',
+                'password' => 'Admin123'
             ],
             'hwrm' => [
-                'host' => 'localhost:3307',
-                'dbname' => 'hwrm',
-                'username' => 'root',
-                'password' => ''
+                'host' => 'localhost',
+                'dbname' => 'frsm_hwrm',
+                'username' => 'frsm_hwrm',
+                'password' => 'Admin123'
             ],
             'piar' => [
-                'host' => 'localhost:3307',
-                'dbname' => 'piar',
-                'username' => 'root',
-                'password' => ''
+                'host' => 'localhost',
+                'dbname' => 'frsm_piar',
+                'username' => 'frsm_piar',
+                'password' => 'Admin123'
             ],
             'pss' => [
-                'host' => 'localhost:3307',
-                'dbname' => 'pss',
-                'username' => 'root',
-                'password' => ''
+                'host' => 'localhost',
+                'dbname' => 'frsm_pss',
+                'username' => 'frsm_pss',
+                'password' => 'Admin123'
             ],
             'tcr' => [
-                'host' => 'localhost:3307',
-                'dbname' => 'tcr',
-                'username' => 'root',
-                'password' => ''
+                'host' => 'localhost',
+                'dbname' => 'frsm_tcr',
+                'username' => 'frsm_tcr',
+                'password' => 'Admin123'
             ]
         ];
 
