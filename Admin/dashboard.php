@@ -808,7 +808,7 @@ unset($_SESSION['error_message']);
             <!-- Header -->
             <div class="dashboard-header animate-fade-in">
                 <div class="page-title">
-                    <h1>Dashboard</h1>
+                    <h1>Dashboards</h1>
                     <p>Welcome back, <?php echo htmlspecialchars($user['first_name'] ?? 'User'); ?>! Here's an overview of the system.</p>
                 </div>
                 
