@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                         if ($user['is_admin']) {
                             $_SESSION['admin_logged_in'] = true;
                             $_SESSION['user_type'] = 'admin';
-                            header("Location: admin/dashboard.php");
+                            header("Location: Admin/dashboard.php");
                             exit();
                         } else {
                             $_SESSION['community_logged_in'] = true;
