@@ -279,7 +279,7 @@ unset($_SESSION['success_message']);
         <!-- Sidebar (unchanged as requested) -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <img src="img/frsmse.png" alt="QC Logo">
+                <img src="img/frsmse1.png" alt="QC Logo">
                 <div class="text">
                     Quezon City<br>
                     <small>Fire & Rescue Service Management</small>
