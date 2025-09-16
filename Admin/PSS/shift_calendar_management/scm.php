@@ -424,7 +424,7 @@ unset($_SESSION['error_message']);
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <img src="img/frsm1.png" alt="QC Logo">
+                <img src="img/frsmse.png" alt="QC Logo">
                 <div class="text">
                     Quezon City<br>
                     <small>Fire & Rescue Service Management</small>
@@ -448,7 +448,10 @@ unset($_SESSION['error_message']);
                 </a>
             
                 <div class="sidebar-dropdown collapse" id="irdMenu">
-                 
+                    <a href="IRD/dashboard/index.php" class="sidebar-dropdown-link">
+                        <i class='bx bxs-dashboard'></i>
+                        <span>Dashboard</span>
+                    </a>
                     <a href="../../IRD/incident_intake/ii.php" class="sidebar-dropdown-link">
                         <i class='bx bx-plus-medical'></i>
                         <span>Incident Intake</span>
@@ -501,7 +504,10 @@ unset($_SESSION['error_message']);
                         <i class='bx bx-file'></i>
                         <span>Inventory Reports & Audit Logs</span>
                     </a>
-                     
+                      <a href="../../FSIET/rolebased_access_control/rac.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-shield'></i>
+                        <span>Role-Based Access Control</span>
+                    </a>
                 </div>
                 
                 <!-- Hydrant and Water Resource Mapping -->
@@ -530,7 +536,10 @@ unset($_SESSION['error_message']);
                      <i class='bx bx-bar-chart-alt-2'></i>
     <span> Reporting & Analytics</span>
                     </a>
-                    
+                    <a href="../../HWRM/access_and_permissions/ap.php" class="sidebar-dropdown-link">
+                    <i class='bx bx-lock-alt'></i>
+    <span> Access and Permissions</span>
+                    </a>
                 </div>
                 
 
@@ -564,110 +573,57 @@ unset($_SESSION['error_message']);
                            <i class='bx bx-file'></i>
         <span>Reporting & Logs</span>
                     </a>
-                      
+                      <a href="../role_based_access/rba.php" class="sidebar-dropdown-link">
+                           <i class='bx bx-lock'></i>
+        <span>Role-Based Access</span>
+                    </a>
                 </div>
                 
                 <!-- Training and Certification Records -->
                 <a class="sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#tcrMenu" role="button">
                     <i class='bx bx-certification'></i>
-                    <span class="text">Training and Certification <br>Records</span>
+                    <span class="text">Training & Certification</span>
                 </a>
                 <div class="sidebar-dropdown collapse" id="tcrMenu">
-                    <a href="../../TCR/personnel_training_profile/ptr.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-book-reader'></i>
-                        <span>Personnel Training Profiles</span>
+                    <a href="../training_management/training.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-book'></i>
+                        <span>Training Management</span>
                     </a>
-                    <a href="../../TCR/training_course_management/tcm.php" class="sidebar-dropdown-link">
-                       <i class='bx bx-chalkboard'></i>
-        <span>Training Course Management</span>
+                    <a href="../certification_tracking/certifications.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-award'></i>
+                        <span>Certification Tracking</span>
                     </a>
-                    <a href="../../TCR/training_calendar_and_scheduling/tcas.php" class="sidebar-dropdown-link">
-                       <i class='bx bx-calendar'></i>
-        <span>Training Calendar and Scheduling</span>
-                    </a>
-                    <a href="../../TCR/certification_tracking/ct.php" class="sidebar-dropdown-link">
-                       <i class='bx bx-badge-check'></i>
-        <span>Certification Tracking</span>
-                    </a>
-                      <a href="../../TCR/training_compliance_monitoring/tcm.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-check-shield'></i>
-        <span>Training Compliance Monitoring</span>
-                    </a>
-                     <a href="../..TCR/evaluation_and_assessment_recoreds/eaar.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-task'></i>
-        <span>Evaluation and Assessment Records</span>
-                    </a>
-                    <a href="../..TCR/reporting_and_auditlogs/ral.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-file'></i>
-        <span>Reporting and Audit Logs</span>
                 </div>
                 
-             <!-- Fire Inspection and Compliance Records -->
+                <!-- Fire Inspection and Compliance Records -->
                 <a class="sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#ficrMenu" role="button">
                     <i class='bx bx-clipboard'></i>
                     <span class="text">Inspection & Compliance</span>
                 </a>
                 <div class="sidebar-dropdown collapse" id="ficrMenu">
-                    <a href="../../FICR/establishment_registry/er.php" class="sidebar-dropdown-link">
-                           <i class='bx bx-building-house'></i>
-                        <span>Establishment/Property Registry</span>
+                    <a href="../inspection_scheduling/inspections.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-search-alt'></i>
+                        <span>Inspection Scheduling</span>
                     </a>
-                    <a href="../../FICR/inspection_scheduling_and_assignment/isaa.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-calendar-event'></i>
-                        <span>Inspection Scheduling and Assignment</span>
-                    </a>
-                    <a href="../../FICR/inspection_checklist_management/icm.php" class="sidebar-dropdown-link">
-                       <i class='bx bx-list-check'></i>
-                        <span>Inspection Checklist Management</span>
-                    </a>
-                    <a href="../../FICR/violation_and_compliance_tracking/vact.php" class="sidebar-dropdown-link">
-                           <i class='bx bx-shield-x'></i>
-                        <span>Violation and Compliance Tracking</span>
-                    </a>
-                    <a href="../../FICR/clearance_and_certification_management/cacm.php" class="sidebar-dropdown-link">
-                          <i class='bx bx-file'></i>
-                        <span>Clearance and Certification Management</span>
-                    </a>
-                     <a href="../../FICR/reporting_and_analytics/raa.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-bar-chart-alt-2'></i>
-                        <span>Reporting and Analytics</span>
+                    <a href="../violation_tracking/violations.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-error'></i>
+                        <span>Violation Tracking</span>
                     </a>
                 </div>
                 
-                
-                    <!-- Post-Incident Analysis and Reporting -->
+                <!-- Post-Incident Analysis and Reporting -->
                 <a class="sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#piarMenu" role="button">
                     <i class='bx bx-analyse'></i>
                     <span class="text">Post-Incident Analysis</span>
                 </a>
                 <div class="sidebar-dropdown collapse" id="piarMenu">
-                    <a href="../../PIAR/incident_summary_documentation/isd.php" class="sidebar-dropdown-link">
-<i class='bx bx-file'></i>
-    <span>Incident Summary Documentation</span>
+                    <a href="../incident_analysis/analysis.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-line-chart'></i>
+                        <span>Incident Analysis</span>
                     </a>
-                    <a href="../../PIAR/response_timeline_tracking/rtt.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-time-five'></i>
-    <span>Response Timeline Tracking</span>
-                    </a>
-                     <a href="../../PIAR/personnel_and_unit_involvement/paui.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-group'></i>
-    <span>Personnel and Unit Involvement</span>
-                    </a>
-                     <a href="../../PIAR/cause_and_origin_investigation/caoi.php" class="sidebar-dropdown-link">
-                       <i class='bx bx-search-alt'></i>
-    <span>Cause and Origin Investigation</span>
-                    </a>
-                       <a href="../../PIAR/damage_assessment/da.php" class="sidebar-dropdown-link">
-                      <i class='bx bx-building-house'></i>
-    <span>Damage Assessment</span>
-                    </a>
-                       <a href="../../PIAR/action_review_and_lessons_learned/arall.php" class="sidebar-dropdown-link">
-                     <i class='bx bx-refresh'></i>
-    <span>Action Review and Lessons Learned</span>
-                    </a>
-                     <a href="../../PIAR/report_generation_and_archiving/rgaa.php" class="sidebar-dropdown-link">
-                     <i class='bx bx-archive'></i>
-    <span>Report Generation and Archiving</span>
+                    <a href="../lessons_learned/lessons.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-book-bookmark'></i>
+                        <span>Lessons Learned</span>
                     </a>
                 </div>
                 
@@ -783,7 +739,7 @@ unset($_SESSION['error_message']);
                         <div class="stats-container">
                             <div class="stat-card danger">
                                 <div class="stat-number"><?php echo count($employees); ?></div>
-                                <div class="stat-label">Total Personnel</div>
+                                <div class 'stat-label'>Total Personnel</div>
                             </div>
                         </div>
                     </div>
@@ -1206,67 +1162,75 @@ unset($_SESSION['error_message']);
                 // Update modal title
                 dayShiftsModal.querySelector('#modalDate').textContent = formattedDate
                 
-                // Get shifts for this date from the pre-loaded data
-                const shifts = <?php echo json_encode($shifts_by_date); ?>[date] || [];
-                const tableBody = dayShiftsModal.querySelector('#dayShiftsTableBody')
-                tableBody.innerHTML = ''
-                
-                if (shifts.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No shifts scheduled for this day</td></tr>'
-                    return
-                }
-                
-                shifts.forEach(shift => {
-                    const row = document.createElement('tr')
-                    
-                    // Format the time
-                    const startTime = new Date(`2000-01-01T${shift.start_time}`).toLocaleTimeString('en-US', { 
-                        hour: '2-digit', 
-                        minute: '2-digit',
-                        hour12: true 
+                // Fetch shifts for this date via AJAX
+                fetch(`ajax/get_day_shifts.php?date=${date}`)
+                    .then(response => response.json())
+                    .then(shifts => {
+                        const tableBody = dayShiftsModal.querySelector('#dayShiftsTableBody')
+                        tableBody.innerHTML = ''
+                        
+                        if (shifts.length === 0) {
+                            tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No shifts scheduled for this day</td></tr>'
+                            return
+                        }
+                        
+                        shifts.forEach(shift => {
+                            const row = document.createElement('tr')
+                            
+                            // Format the time
+                            const startTime = new Date(`2000-01-01T${shift.start_time}`).toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit',
+                                hour12: true 
+                            })
+                            
+                            const endTime = new Date(`2000-01-01T${shift.end_time}`).toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit',
+                                hour12: true 
+                            })
+                            
+                            // Status badge
+                            let statusClass = 'bg-warning'
+                            let statusText = 'Scheduled'
+                            if (shift.status === 'confirmed') {
+                                statusClass = 'bg-success'
+                                statusText = 'Confirmed'
+                            }
+                            
+                            row.innerHTML = `
+                                <td>${shift.first_name} ${shift.last_name} (${shift.employee_id})</td>
+                                <td><span class="badge" style="background-color: ${shift.color}">${shift.shift_name}</span></td>
+                                <td>${startTime} - ${endTime}</td>
+                                <td><span class="badge ${statusClass}">${statusText}</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#shiftDetailsModal"
+                                            data-bs-dismiss="modal"
+                                            data-shift-id="${shift.id}"
+                                            data-shift-type-id="${shift.shift_type_id}"
+                                            data-employee-name="${shift.first_name} ${shift.last_name}"
+                                            data-employee-id="${shift.employee_id}"
+                                            data-shift-name="${shift.shift_name}"
+                                            data-start-time="${startTime}"
+                                            data-end-time="${endTime}"
+                                            data-date="${new Date(shift.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}"
+                                            data-notes="${shift.notes || ''}"
+                                            data-status="${shift.status}">
+                                        View Details
+                                    </button>
+                                </td>
+                            `
+                            
+                            tableBody.appendChild(row)
+                        })
                     })
-                    
-                    const endTime = new Date(`2000-01-01T${shift.end_time}`).toLocaleTimeString('en-US', { 
-                        hour: '2-digit', 
-                        minute: '2-digit',
-                        hour12: true 
+                    .catch(error => {
+                        console.error('Error fetching day shifts:', error)
+                        dayShiftsModal.querySelector('#dayShiftsTableBody').innerHTML = 
+                            '<tr><td colspan="5" class="text-center text-danger">Error loading shifts</td></tr>'
                     })
-                    
-                    // Status badge
-                    let statusClass = 'bg-warning'
-                    let statusText = 'Scheduled'
-                    if (shift.status === 'confirmed') {
-                        statusClass = 'bg-success'
-                        statusText = 'Confirmed'
-                    }
-                    
-                    row.innerHTML = `
-                        <td>${shift.first_name} ${shift.last_name} (${shift.employee_id})</td>
-                        <td><span class="badge" style="background-color: ${shift.color}">${shift.shift_name}</span></td>
-                        <td>${startTime} - ${endTime}</td>
-                        <td><span class="badge ${statusClass}">${statusText}</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#shiftDetailsModal"
-                                    data-bs-dismiss="modal"
-                                    data-shift-id="${shift.id}"
-                                    data-shift-type-id="${shift.shift_type_id}"
-                                    data-employee-name="${shift.first_name} ${shift.last_name}"
-                                    data-employee-id="${shift.employee_id}"
-                                    data-shift-name="${shift.shift_name}"
-                                    data-start-time="${startTime}"
-                                    data-end-time="${endTime}"
-                                    data-date="${new Date(shift.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}"
-                                    data-notes="${shift.notes || ''}"
-                                    data-status="${shift.status}">
-                                View Details
-                            </button>
-                        </td>
-                    `
-                    
-                    tableBody.appendChild(row)
-                })
             })
         }
         
