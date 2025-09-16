@@ -507,10 +507,7 @@ unset($_SESSION['error_message']);
                      <i class='bx bx-bar-chart-alt-2'></i>
     <span> Reporting & Analytics</span>
                     </a>
-                    <a href="../../HWRM/access_and_permissions/ap.php" class="sidebar-dropdown-link">
-                    <i class='bx bx-lock-alt'></i>
-    <span> Access and Permissions</span>
-                    </a>
+                 
                 </div>
                 
 
