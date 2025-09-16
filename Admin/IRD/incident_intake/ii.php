@@ -41,8 +41,8 @@ try {
     // Get barangays for dropdown
     $barangays = $dbManager->fetchAll("ird", "SELECT DISTINCT barangay FROM incidents WHERE barangay IS NOT NULL AND barangay != '' ORDER BY barangay");
     
-    // Get incident types for dropdown - using the incident_types table instead
-    $incident_types = $dbManager->fetchAll("ird", "SELECT * FROM incident_types ORDER BY type_name");
+    // Get incident types for dropdown
+    $incident_types = $dbManager->fetchAll("ird", "SELECT DISTINCT incident_type FROM incidents WHERE incident_type IS NOT NULL AND incident_type != '' ORDER BY incident_type");
     
     // Get available units for AI recommendations
     $available_units = $dbManager->fetchAll("ird", "SELECT * FROM units WHERE status = 'available'");
@@ -313,15 +313,6 @@ unset($_SESSION['new_incident_id']);
             margin-bottom: 8px;
             font-size: 0.9rem;
         }
-        .optgroup-header {
-            font-weight: bold;
-            font-style: italic;
-            background-color: #f8f9fa;
-            padding: 5px 10px;
-        }
-        .incident-type-option {
-            padding-left: 30px !important;
-        }
     </style>
 </head>
 <body>
@@ -329,7 +320,7 @@ unset($_SESSION['new_incident_id']);
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <img src="img/frsm1.png" alt="QC Logo">
+                <img src="img/frsmse.png" alt="QC Logo">
                 <div class="text">
                     Quezon City<br>
                     <small>Fire & Rescue Service Management</small>
@@ -353,7 +344,10 @@ unset($_SESSION['new_incident_id']);
                 </a>
             
                 <div class="sidebar-dropdown collapse show" id="irdMenu">
-                
+                    <a href="IRD/dashboard/index.php" class="sidebar-dropdown-link">
+                        <i class='bx bxs-dashboard'></i>
+                        <span>Dashboard</span>
+                    </a>
                     <a href="ii.php" class="sidebar-dropdown-link active">
                         <i class='bx bx-plus-medical'></i>
                         <span>Incident Intake</span>
@@ -390,7 +384,7 @@ unset($_SESSION['new_incident_id']);
                         <i class='bx bx-package'></i>
                         <span>Inventory Management</span>
                     </a>
-                    <a href="../../FSIET/equipment_location_tracking/elt.php" class="sidebar-dropdown-link">
+                    <a href="../../equipment_tracking/et.php" class="sidebar-dropdown-link">
                         <i class='bx bx-wrench'></i>
                         <span>Equipment Location Tracking</span>
                     </a>
@@ -498,11 +492,11 @@ unset($_SESSION['new_incident_id']);
                         <i class='bx bx-check-shield'></i>
         <span>Training Compliance Monitoring</span>
                     </a>
-                     <a href="../../TCR/evaluation_and_assessment_recoreds/eaar.php" class="sidebar-dropdown-link">
+                     <a href="../..TCR/evaluation_and_assessment_recoreds/eaar.php" class="sidebar-dropdown-link">
                         <i class='bx bx-task'></i>
         <span>Evaluation and Assessment Records</span>
                     </a>
-                    <a href="../../TCR/reporting_and_auditlogs/ral.php" class="sidebar-dropdown-link">
+                    <a href="../..TCR/reporting_and_auditlogs/ral.php" class="sidebar-dropdown-link">
                         <i class='bx bx-file'></i>
         <span>Reporting and Audit Logs</span>
                 </div>
@@ -778,26 +772,20 @@ unset($_SESSION['new_incident_id']);
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">Incident Types <span class="text-danger">*</span></label>
+                                                <label class="form-label">Incident Type <span class="text-danger">*</span></label>
                                                 <select class="form-select" name="incident_type" required id="incident_type">
                                                     <option value="">Select incident type</option>
-                                                    <?php
-                                                    // Group incident types by category
-                                                    $categories = [];
-                                                    foreach ($incident_types as $type) {
-                                                        $categories[$type['category']][] = $type;
-                                                    }
-                                                    
-                                                    // Display organized dropdown
-                                                    foreach ($categories as $category => $types) {
-                                                        echo '<optgroup label="' . htmlspecialchars($category) . '">';
-                                                        foreach ($types as $type) {
-                                                            echo '<option value="' . htmlspecialchars($type['type_name']) . '" class="incident-type-option">' . 
-                                                                 htmlspecialchars($type['type_name']) . '</option>';
-                                                        }
-                                                        echo '</optgroup>';
-                                                    }
-                                                    ?>
+                                                    <?php foreach ($incident_types as $type): ?>
+                                                        <option value="<?php echo htmlspecialchars($type['incident_type']); ?>">
+                                                            <?php echo htmlspecialchars($type['incident_type']); ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                    <option value="Fire">Fire</option>
+                                                    <option value="Medical Emergency">Medical Emergency</option>
+                                                    <option value="Rescue">Rescue</option>
+                                                    <option value="Hazardous Materials">Hazardous Materials</option>
+                                                    <option value="Traffic Accident">Traffic Accident</option>
+                                                    <option value="Other">Other</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -825,6 +813,12 @@ unset($_SESSION['new_incident_id']);
                                                             <?php echo htmlspecialchars($barangay['barangay']); ?>
                                                         </option>
                                                     <?php endforeach; ?>
+                                                    <option value="Commonwealth">Commonwealth</option>
+                                                    <option value="Batasan Hills">Batasan Hills</option>
+                                                    <option value="Payatas">Payatas</option>
+                                                    <option value="Bagong Silangan">Bagong Silangan</option>
+                                                    <option value="Holy Spirit">Holy Spirit</option>
+                                                    <option value="Alicia">Alicia</option>
                                                 </select>
                                             </div>
                                         </div>

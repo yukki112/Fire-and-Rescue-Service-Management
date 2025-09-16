@@ -4,7 +4,7 @@ if (!class_exists('DatabaseManager')) {
     class DatabaseManager {
         private $connections = [];
         private $config = [
-            'ird' => [
+           'ird' => [
                 'host' => 'localhost',
                 'dbname' => 'frsm_ird',
                 'username' => 'frsm_ird',

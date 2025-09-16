@@ -131,7 +131,7 @@ if (isset($_GET['action'])) {
 
 // Fetch all incidents
 try {
-    $query = "SELECT piar.*, CONCAT(u.first_name, ' ', u.last_name) as creator_name 
+    $query = "SELECT iar.*, CONCAT(u.first_name, ' ', u.last_name) as creator_name 
              FROM piar.incident_analysis_reports iar
              LEFT JOIN frsm.users u ON iar.created_by = u.id
              WHERE iar.status != 'archived'
@@ -362,7 +362,7 @@ if (isset($_SESSION['error_message'])) {
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <img src="img/frsm1.png" alt="QC Logo">
+                <img src="img/frsmse.png" alt="QC Logo">
                 <div class="text">
                     Quezon City<br>
                     <small>Fire & Rescue Service Management</small>
@@ -386,7 +386,10 @@ if (isset($_SESSION['error_message'])) {
                 </a>
             
                 <div class="sidebar-dropdown collapse" id="irdMenu">
-                 
+                    <a href="IRD/dashboard/index.php" class="sidebar-dropdown-link">
+                        <i class='bx bxs-dashboard'></i>
+                        <span>Dashboard</span>
+                    </a>
                     <a href="../../IRD/incident_intake/ii.php" class="sidebar-dropdown-link">
                         <i class='bx bx-plus-medical'></i>
                         <span>Incident Intake</span>
@@ -468,7 +471,10 @@ if (isset($_SESSION['error_message'])) {
                      <i class='bx bx-bar-chart-alt-2'></i>
     <span> Reporting & Analytics</span>
                     </a>
-                
+                    <a href="../../HWRM/access_and_permissions/ap.php" class="sidebar-dropdown-link">
+                    <i class='bx bx-lock-alt'></i>
+    <span> Access and Permissions</span>
+                    </a>
                 </div>
                 
 

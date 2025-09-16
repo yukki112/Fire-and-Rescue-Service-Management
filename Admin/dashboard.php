@@ -476,7 +476,7 @@ unset($_SESSION['error_message']);
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <img src="img/frsm1.png" alt="QC Logo">
+                <img src="img/frsmse.png" alt="QC Logo">
                 <div class="text">
                     Quezon City<br>
                     <small>Fire & Rescue Service Management</small>
@@ -500,7 +500,10 @@ unset($_SESSION['error_message']);
                 </a>
             
                 <div class="sidebar-dropdown collapse <?php echo $active_module == 'ird' ? 'show' : ''; ?>" id="irdMenu">
-                   
+                    <a href="IRD/dashboard/index.php" class="sidebar-dropdown-link <?php echo $active_submodule == 'ii' ? 'active' : ''; ?>">
+                        <i class='bx bxs-dashboard'></i>
+                        <span>Dashboard</span>
+                    </a>
                     <a href="IRD/incident_intake/ii.php" class="sidebar-dropdown-link <?php echo $active_submodule == 'ii' ? 'active' : ''; ?>">
                         <i class='bx bx-plus-medical'></i>
                         <span>Incident Intake</span>
@@ -786,7 +789,7 @@ unset($_SESSION['error_message']);
                 
                 <div class="sidebar-section">System</div>
                 
-                <a href="SETTINGS/settings.php" class="sidebar-link <?php echo $active_tab == 'settings' ? 'active' : ''; ?>">
+                <a href="settings.php" class="sidebar-link <?php echo $active_tab == 'settings' ? 'active' : ''; ?>">
                     <i class='bx bx-cog'></i>
                     <span class="text">Settings</span>
                 </a>
@@ -808,7 +811,7 @@ unset($_SESSION['error_message']);
             <!-- Header -->
             <div class="dashboard-header animate-fade-in">
                 <div class="page-title">
-                    <h1>Dashboardss</h1>
+                    <h1>Dashboard</h1>
                     <p>Welcome back, <?php echo htmlspecialchars($user['first_name'] ?? 'User'); ?>! Here's an overview of the system.</p>
                 </div>
                 
@@ -922,7 +925,7 @@ unset($_SESSION['error_message']);
                         <div class="card animate-fade-in" style="animation-delay: 0.4s;">
                             <div class="card-header">
                                 <h5>Recent Incidents</h5>
-                                <a href="IRD/incident_intake/ii.php" class="btn btn-sm btn-outline-primary">View All</a>
+                                <a href="ii.php" class="btn btn-sm btn-outline-primary">View All</a>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -980,7 +983,7 @@ unset($_SESSION['error_message']);
                         <div class="card mt-4 animate-fade-in" style="animation-delay: 0.5s;">
                             <div class="card-header">
                                 <h5>Active Dispatches</h5>
-                                <a href="IRD/unit_assignment/ua.php" class="btn btn-sm btn-outline-primary">View All</a>
+                                <a href="ua.php" class="btn btn-sm btn-outline-primary">View All</a>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -1037,7 +1040,7 @@ unset($_SESSION['error_message']);
                         <div class="card animate-fade-in" style="animation-delay: 0.4s;">
                             <div class="card-header">
                                 <h5>Available Units (<?php echo $available_units_count; ?>)</h5>
-                                <a href="IRD/unit_assignment/ua.php" class="btn btn-sm btn-outline-primary">Manage</a>
+                                <a href="ua.php" class="btn btn-sm btn-outline-primary">Manage</a>
                             </div>
                             <div class="card-body p-0">
                                 <div class="list-group list-group-flush">
@@ -1074,25 +1077,25 @@ unset($_SESSION['error_message']);
                             <div class="card-body">
                                 <div class="row g-2">
                                     <div class="col-6">
-                                        <a href="IRD/incident_intake/ii.php" class="btn btn-outline-primary w-100 d-flex flex-column align-items-center py-3">
+                                        <a href="ii.php" class="btn btn-outline-primary w-100 d-flex flex-column align-items-center py-3">
                                             <i class='bx bx-plus-medical mb-2' style="font-size: 1.5rem;"></i>
                                             <span>New Incident</span>
                                         </a>
                                     </div>
                                     <div class="col-6">
-                                        <a href="IRD/unit_assignment/ua.php" class="btn btn-outline-info w-100 d-flex flex-column align-items-center py-3">
+                                        <a href="ua.php" class="btn btn-outline-info w-100 d-flex flex-column align-items-center py-3">
                                             <i class='bx bx-group mb-2' style="font-size: 1.5rem;"></i>
                                             <span>Assign Unit</span>
                                         </a>
                                     </div>
                                     <div class="col-6">
-                                        <a href="IRD/incident_location_mapping/ilm.php" class="btn btn-outline-success w-100 d-flex flex-column align-items-center py-3">
+                                        <a href="mapping.php" class="btn btn-outline-success w-100 d-flex flex-column align-items-center py-3">
                                             <i class='bx bx-map mb-2' style="font-size: 1.5rem;"></i>
                                             <span>View Map</span>
                                         </a>
                                     </div>
                                     <div class="col-6">
-                                        <a href="IRD/reporting/report.php" class="btn btn-outline-warning w-100 d-flex flex-column align-items-center py-3">
+                                        <a href="reporting.php" class="btn btn-outline-warning w-100 d-flex flex-column align-items-center py-3">
                                             <i class='bx bx-file mb-2' style="font-size: 1.5rem;"></i>
                                             <span>Generate Report</span>
                                         </a>
@@ -1166,7 +1169,7 @@ unset($_SESSION['error_message']);
                                     <span class="stat-label">Maintenance Due</span>
                                 </div>
                             </div>
-                            <a href="FSIET/inventory_management/im.php" class="btn btn-sm btn-outline-info mt-2">Manage</a>
+                            <a href="inventory.php" class="btn btn-sm btn-outline-info mt-2">Manage</a>
                         </div>
                     </div>
                     
@@ -1191,7 +1194,7 @@ unset($_SESSION['error_message']);
                                     <span class="stat-label">Water Sources</span>
                                 </div>
                             </div>
-                            <a href="HWRM/hydrant_resources_mapping/hrm.php" class="btn btn-sm btn-outline-primary mt-2">View Map</a>
+                            <a href="hydrants.php" class="btn btn-sm btn-outline-primary mt-2">View Map</a>
                         </div>
                     </div>
                     
@@ -1216,7 +1219,7 @@ unset($_SESSION['error_message']);
                                     <span class="stat-label">Active Personnel</span>
                                 </div>
                             </div>
-                            <a href="PSS/shift_calendar_management/scm.php" class="btn btn-sm btn-outline-warning mt-2">Manage</a>
+                            <a href="shifts.php" class="btn btn-sm btn-outline-warning mt-2">Manage</a>
                         </div>
                     </div>
                     
@@ -1241,7 +1244,7 @@ unset($_SESSION['error_message']);
                                     <span class="stat-label">Total Courses</span>
                                 </div>
                             </div>
-                            <a href="TCR/personnel_training_profile/ptr.php" class="btn btn-sm btn-outline-success mt-2">View</a>
+                            <a href="training.php" class="btn btn-sm btn-outline-success mt-2">View</a>
                         </div>
                     </div>
                     
@@ -1266,7 +1269,7 @@ unset($_SESSION['error_message']);
                                     <span class="stat-label">Establishments</span>
                                 </div>
                             </div>
-                            <a href="FICR/establishment_registry/er.php" class="btn btn-sm btn-outline-purple mt-2">Schedule</a>
+                            <a href="inspections.php" class="btn btn-sm btn-outline-purple mt-2">Schedule</a>
                         </div>
                     </div>
                     
@@ -1291,7 +1294,7 @@ unset($_SESSION['error_message']);
                                     <span class="stat-label">Completed Reports</span>
                                 </div>
                             </div>
-                            <a href="PIAR/incident_summary_documentation/isd.php" class="btn btn-sm btn-outline-indigo mt-2">Analyze</a>
+                            <a href="analysis.php" class="btn btn-sm btn-outline-indigo mt-2">Analyze</a>
                         </div>
                     </div>
                 </div>

@@ -504,10 +504,7 @@ unset($_SESSION['error_message']);
                         <i class='bx bx-file'></i>
                         <span>Inventory Reports & Audit Logs</span>
                     </a>
-                      <a href="../../FSIET/rolebased_access_control/rac.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-shield'></i>
-                        <span>Role-Based Access Control</span>
-                    </a>
+                     
                 </div>
                 
                 <!-- Hydrant and Water Resource Mapping -->
@@ -536,10 +533,7 @@ unset($_SESSION['error_message']);
                      <i class='bx bx-bar-chart-alt-2'></i>
     <span> Reporting & Analytics</span>
                     </a>
-                    <a href="../../HWRM/access_and_permissions/ap.php" class="sidebar-dropdown-link">
-                    <i class='bx bx-lock-alt'></i>
-    <span> Access and Permissions</span>
-                    </a>
+                    
                 </div>
                 
 
@@ -573,57 +567,110 @@ unset($_SESSION['error_message']);
                            <i class='bx bx-file'></i>
         <span>Reporting & Logs</span>
                     </a>
-                      <a href="../role_based_access/rba.php" class="sidebar-dropdown-link">
-                           <i class='bx bx-lock'></i>
-        <span>Role-Based Access</span>
-                    </a>
+                      
                 </div>
                 
                 <!-- Training and Certification Records -->
                 <a class="sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#tcrMenu" role="button">
                     <i class='bx bx-certification'></i>
-                    <span class="text">Training & Certification</span>
+                    <span class="text">Training and Certification <br>Records</span>
                 </a>
                 <div class="sidebar-dropdown collapse" id="tcrMenu">
-                    <a href="../training_management/training.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-book'></i>
-                        <span>Training Management</span>
+                    <a href="../../TCR/personnel_training_profile/ptr.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-book-reader'></i>
+                        <span>Personnel Training Profiles</span>
                     </a>
-                    <a href="../certification_tracking/certifications.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-award'></i>
-                        <span>Certification Tracking</span>
+                    <a href="../../TCR/training_course_management/tcm.php" class="sidebar-dropdown-link">
+                       <i class='bx bx-chalkboard'></i>
+        <span>Training Course Management</span>
                     </a>
+                    <a href="../../TCR/training_calendar_and_scheduling/tcas.php" class="sidebar-dropdown-link">
+                       <i class='bx bx-calendar'></i>
+        <span>Training Calendar and Scheduling</span>
+                    </a>
+                    <a href="../../TCR/certification_tracking/ct.php" class="sidebar-dropdown-link">
+                       <i class='bx bx-badge-check'></i>
+        <span>Certification Tracking</span>
+                    </a>
+                      <a href="../../TCR/training_compliance_monitoring/tcm.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-check-shield'></i>
+        <span>Training Compliance Monitoring</span>
+                    </a>
+                     <a href="../..TCR/evaluation_and_assessment_recoreds/eaar.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-task'></i>
+        <span>Evaluation and Assessment Records</span>
+                    </a>
+                    <a href="../..TCR/reporting_and_auditlogs/ral.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-file'></i>
+        <span>Reporting and Audit Logs</span>
                 </div>
                 
-                <!-- Fire Inspection and Compliance Records -->
+             <!-- Fire Inspection and Compliance Records -->
                 <a class="sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#ficrMenu" role="button">
                     <i class='bx bx-clipboard'></i>
                     <span class="text">Inspection & Compliance</span>
                 </a>
                 <div class="sidebar-dropdown collapse" id="ficrMenu">
-                    <a href="../inspection_scheduling/inspections.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-search-alt'></i>
-                        <span>Inspection Scheduling</span>
+                    <a href="../../FICR/establishment_registry/er.php" class="sidebar-dropdown-link">
+                           <i class='bx bx-building-house'></i>
+                        <span>Establishment/Property Registry</span>
                     </a>
-                    <a href="../violation_tracking/violations.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-error'></i>
-                        <span>Violation Tracking</span>
+                    <a href="../../FICR/inspection_scheduling_and_assignment/isaa.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-calendar-event'></i>
+                        <span>Inspection Scheduling and Assignment</span>
+                    </a>
+                    <a href="../../FICR/inspection_checklist_management/icm.php" class="sidebar-dropdown-link">
+                       <i class='bx bx-list-check'></i>
+                        <span>Inspection Checklist Management</span>
+                    </a>
+                    <a href="../../FICR/violation_and_compliance_tracking/vact.php" class="sidebar-dropdown-link">
+                           <i class='bx bx-shield-x'></i>
+                        <span>Violation and Compliance Tracking</span>
+                    </a>
+                    <a href="../../FICR/clearance_and_certification_management/cacm.php" class="sidebar-dropdown-link">
+                          <i class='bx bx-file'></i>
+                        <span>Clearance and Certification Management</span>
+                    </a>
+                     <a href="../../FICR/reporting_and_analytics/raa.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-bar-chart-alt-2'></i>
+                        <span>Reporting and Analytics</span>
                     </a>
                 </div>
                 
-                <!-- Post-Incident Analysis and Reporting -->
+                
+                    <!-- Post-Incident Analysis and Reporting -->
                 <a class="sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#piarMenu" role="button">
                     <i class='bx bx-analyse'></i>
                     <span class="text">Post-Incident Analysis</span>
                 </a>
                 <div class="sidebar-dropdown collapse" id="piarMenu">
-                    <a href="../incident_analysis/analysis.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-line-chart'></i>
-                        <span>Incident Analysis</span>
+                    <a href="../../PIAR/incident_summary_documentation/isd.php" class="sidebar-dropdown-link">
+<i class='bx bx-file'></i>
+    <span>Incident Summary Documentation</span>
                     </a>
-                    <a href="../lessons_learned/lessons.php" class="sidebar-dropdown-link">
-                        <i class='bx bx-book-bookmark'></i>
-                        <span>Lessons Learned</span>
+                    <a href="../../PIAR/response_timeline_tracking/rtt.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-time-five'></i>
+    <span>Response Timeline Tracking</span>
+                    </a>
+                     <a href="../../PIAR/personnel_and_unit_involvement/paui.php" class="sidebar-dropdown-link">
+                        <i class='bx bx-group'></i>
+    <span>Personnel and Unit Involvement</span>
+                    </a>
+                     <a href="../../PIAR/cause_and_origin_investigation/caoi.php" class="sidebar-dropdown-link">
+                       <i class='bx bx-search-alt'></i>
+    <span>Cause and Origin Investigation</span>
+                    </a>
+                       <a href="../../PIAR/damage_assessment/da.php" class="sidebar-dropdown-link">
+                      <i class='bx bx-building-house'></i>
+    <span>Damage Assessment</span>
+                    </a>
+                       <a href="../../PIAR/action_review_and_lessons_learned/arall.php" class="sidebar-dropdown-link">
+                     <i class='bx bx-refresh'></i>
+    <span>Action Review and Lessons Learned</span>
+                    </a>
+                     <a href="../../PIAR/report_generation_and_archiving/rgaa.php" class="sidebar-dropdown-link">
+                     <i class='bx bx-archive'></i>
+    <span>Report Generation and Archiving</span>
                     </a>
                 </div>
                 

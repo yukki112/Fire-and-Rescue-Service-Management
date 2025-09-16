@@ -29,11 +29,11 @@ try {
     $user = $dbManager->fetch("frsm", "SELECT * FROM users WHERE id = ?", [$_SESSION['user_id']]);
     
     // Get all incidents for mapping across all of Quezon City
-    // Removed the latitude/longitude filter to show all incidents
     $incidents = $dbManager->fetchAll("ird", "
         SELECT i.*, COUNT(d.id) as dispatch_count 
         FROM incidents i 
         LEFT JOIN dispatches d ON i.id = d.incident_id 
+        WHERE i.latitude IS NOT NULL AND i.longitude IS NOT NULL
         GROUP BY i.id
         ORDER BY i.created_at DESC
     ");
@@ -277,14 +277,6 @@ $maptiler_api_key = 'gZtMDh9pV46hFgly6xCT';
             position: relative;
             z-index: 1;
         }
-        
-        .no-location-badge {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            font-size: 0.7rem;
-            padding: 2px 5px;
-        }
     </style>
 </head>
 <body>
@@ -292,7 +284,7 @@ $maptiler_api_key = 'gZtMDh9pV46hFgly6xCT';
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <img src="img/frsm1.png" alt="QC Logo">
+                <img src="img/frsmse.png" alt="QC Logo">
                 <div class="text">
                     Quezon City<br>
                     <small>Fire & Rescue Service Management</small>
@@ -316,7 +308,10 @@ $maptiler_api_key = 'gZtMDh9pV46hFgly6xCT';
                 </a>
             
                 <div class="sidebar-dropdown collapse show" id="irdMenu">
-                  
+                    <a href="IRD/dashboard/index.php" class="sidebar-dropdown-link">
+                        <i class='bx bxs-dashboard'></i>
+                        <span>Dashboard</span>
+                    </a>
                     <a href="../incident_intake/ii.php" class="sidebar-dropdown-link">
                         <i class='bx bx-plus-medical'></i>
                         <span>Incident Intake</span>
@@ -619,14 +614,12 @@ $maptiler_api_key = 'gZtMDh9pV46hFgly6xCT';
                                     <label class="form-label">Incident Type</label>
                                     <select class="form-select" id="typeFilter">
                                         <option value="all">All Types</option>
-                                        <option value="structure-fire">Structure Fire</option>
-                                        <option value="vehicle-fire">Vehicle Fire</option>
-                                        <option value="wildfire">Wildfire</option>
-                                        <option value="medical-emergency">Medical Emergency</option>
-                                        <option value="rescue-operation">Rescue Operation</option>
-                                        <option value="hazardous-materials">Hazardous Materials</option>
-                                        <option value="traffic-accident">Traffic Accident</option>
-                                        <option value="other">Other</option>
+                                        <option value="Fire">Fire</option>
+                                        <option value="Medical Emergency">Medical Emergency</option>
+                                        <option value="Rescue">Rescue</option>
+                                        <option value="Traffic Accident">Traffic Accident</option>
+                                        <option value="Hazardous Materials">Hazardous Materials</option>
+                                        <option value="Other">Other</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
@@ -657,39 +650,29 @@ $maptiler_api_key = 'gZtMDh9pV46hFgly6xCT';
                                     <input class="form-check-input" type="checkbox" id="showHospitals" checked>
                                     <label class="form-check-label" for="showHospitals">Show Hospitals</label>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="showIncidentsWithoutLocation" checked>
-                                    <label class="form-check-label" for="showIncidentsWithoutLocation">Show Incidents Without Location</label>
-                                </div>
                             </div>
                             
                             <div>
-                                <h5>Recent Incidents (<?php echo count($incidents); ?>)</h5>
+                                <h5>Recent Incidents</h5>
                                 <?php if (count($incidents) > 0): ?>
                                     <?php foreach ($incidents as $incident): ?>
                                     <div class="incident-card <?php echo $incident['priority'] . ' ' . $incident['status']; ?>" 
                                          data-id="<?php echo $incident['id']; ?>"
-                                         data-lat="<?php echo $incident['latitude'] ?? ''; ?>"
-                                         data-lng="<?php echo $incident['longitude'] ?? ''; ?>"
+                                         data-lat="<?php echo $incident['latitude']; ?>"
+                                         data-lng="<?php echo $incident['longitude']; ?>"
                                          data-type="<?php echo $incident['incident_type']; ?>"
                                          data-priority="<?php echo $incident['priority']; ?>"
-                                         data-status="<?php echo $incident['status']; ?>"
-                                         data-has-location="<?php echo ($incident['latitude'] && $incident['longitude']) ? 'true' : 'false'; ?>">
+                                         data-status="<?php echo $incident['status']; ?>">
                                         <div class="card-body p-3">
                                             <div class="d-flex justify-content-between align-items-start">
                                                 <h6 class="card-title mb-1"><?php echo htmlspecialchars($incident['incident_type']); ?></h6>
-                                                <div>
-                                                    <?php if (!$incident['latitude'] || !$incident['longitude']): ?>
-                                                    <span class="badge bg-secondary no-location-badge">No Location</span>
-                                                    <?php endif; ?>
-                                                    <span class="badge bg-<?php 
-                                                        echo $incident['priority'] == 'critical' ? 'danger' : 
-                                                            ($incident['priority'] == 'high' ? 'warning' : 
-                                                            ($incident['priority'] == 'medium' ? 'info' : 'secondary')); 
-                                                    ?>">
-                                                        <?php echo ucfirst($incident['priority']); ?>
-                                                    </span>
-                                                </div>
+                                                <span class="badge bg-<?php 
+                                                    echo $incident['priority'] == 'critical' ? 'danger' : 
+                                                        ($incident['priority'] == 'high' ? 'warning' : 
+                                                        ($incident['priority'] == 'medium' ? 'info' : 'secondary')); 
+                                                ?>">
+                                                    <?php echo ucfirst($incident['priority']); ?>
+                                                </span>
                                             </div>
                                             <p class="card-text mb-1 small"><?php echo htmlspecialchars($incident['barangay']); ?></p>
                                             <p class="card-text small text-muted">
@@ -704,7 +687,7 @@ $maptiler_api_key = 'gZtMDh9pV46hFgly6xCT';
                                 <?php else: ?>
                                     <div class="text-center py-4">
                                         <i class='bx bx-map-alt' style="font-size: 3rem; color: #6c757d;"></i>
-                                        <p class="mt-2">No incidents available</p>
+                                        <p class="mt-2">No incidents with location data available</p>
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -1024,27 +1007,23 @@ $maptiler_api_key = 'gZtMDh9pV46hFgly6xCT';
         document.getElementById('statusFilter').addEventListener('change', filterMarkers);
         document.getElementById('showUnits').addEventListener('change', toggleLayer);
         document.getElementById('showHospitals').addEventListener('change', toggleLayer);
-        document.getElementById('showIncidentsWithoutLocation').addEventListener('change', filterMarkers);
         
         function filterMarkers() {
             const type = document.getElementById('typeFilter').value;
             const priority = document.getElementById('priorityFilter').value;
             const status = document.getElementById('statusFilter').value;
-            const showWithoutLocation = document.getElementById('showIncidentsWithoutLocation').checked;
             
             // Filter incident cards
             document.querySelectorAll('.incident-card').forEach(card => {
                 const cardType = card.getAttribute('data-type');
                 const cardPriority = card.getAttribute('data-priority');
                 const cardStatus = card.getAttribute('data-status');
-                const hasLocation = card.getAttribute('data-has-location') === 'true';
                 
                 const typeMatch = type === 'all' || cardType === type;
                 const priorityMatch = priority === 'all' || cardPriority === priority;
                 const statusMatch = status === 'all' || cardStatus === status;
-                const locationMatch = showWithoutLocation || hasLocation;
                 
-                if (typeMatch && priorityMatch && statusMatch && locationMatch) {
+                if (typeMatch && priorityMatch && statusMatch) {
                     card.style.display = 'block';
                 } else {
                     card.style.display = 'none';
@@ -1122,10 +1101,8 @@ $maptiler_api_key = 'gZtMDh9pV46hFgly6xCT';
                 document.body.appendChild(form);
                 form.submit();
                 
-                // Also center map on the incident if it has coordinates
-                if (lat && lng) {
-                    map.setView([lat, lng], 16);
-                }
+                // Also center map on the incident
+                map.setView([lat, lng], 16);
             });
         });
         

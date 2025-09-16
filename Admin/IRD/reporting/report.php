@@ -430,7 +430,7 @@ $is_generated_view = isset($_GET['action']) && $_GET['action'] === 'generated';
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <img src="img/frsm1.png" alt="QC Logo">
+                <img src="img/frsmse.png" alt="QC Logo">
                 <div class="text">
                     Quezon City<br>
                     <small>Fire & Rescue Service Management</small>
@@ -454,7 +454,10 @@ $is_generated_view = isset($_GET['action']) && $_GET['action'] === 'generated';
                 </a>
             
                 <div class="sidebar-dropdown collapse show" id="irdMenu">
-                   
+                    <a href="IRD/dashboard/index.php" class="sidebar-dropdown-link">
+                        <i class='bx bxs-dashboard'></i>
+                        <span>Dashboard</span>
+                    </a>
                     <a href="../incident_intake/ii.php" class="sidebar-dropdown-link">
                         <i class='bx bx-plus-medical'></i>
                         <span>Incident Intake</span>
