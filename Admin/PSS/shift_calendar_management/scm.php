@@ -783,7 +783,7 @@ unset($_SESSION['error_message']);
                         <div class="stats-container">
                             <div class="stat-card danger">
                                 <div class="stat-number"><?php echo count($employees); ?></div>
-                                <div class 'stat-label'>Total Personnel</div>
+                                <div class="stat-label">Total Personnel</div>
                             </div>
                         </div>
                     </div>
@@ -1206,75 +1206,67 @@ unset($_SESSION['error_message']);
                 // Update modal title
                 dayShiftsModal.querySelector('#modalDate').textContent = formattedDate
                 
-                // Fetch shifts for this date via AJAX
-                fetch(`ajax/get_day_shifts.php?date=${date}`)
-                    .then(response => response.json())
-                    .then(shifts => {
-                        const tableBody = dayShiftsModal.querySelector('#dayShiftsTableBody')
-                        tableBody.innerHTML = ''
-                        
-                        if (shifts.length === 0) {
-                            tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No shifts scheduled for this day</td></tr>'
-                            return
-                        }
-                        
-                        shifts.forEach(shift => {
-                            const row = document.createElement('tr')
-                            
-                            // Format the time
-                            const startTime = new Date(`2000-01-01T${shift.start_time}`).toLocaleTimeString('en-US', { 
-                                hour: '2-digit', 
-                                minute: '2-digit',
-                                hour12: true 
-                            })
-                            
-                            const endTime = new Date(`2000-01-01T${shift.end_time}`).toLocaleTimeString('en-US', { 
-                                hour: '2-digit', 
-                                minute: '2-digit',
-                                hour12: true 
-                            })
-                            
-                            // Status badge
-                            let statusClass = 'bg-warning'
-                            let statusText = 'Scheduled'
-                            if (shift.status === 'confirmed') {
-                                statusClass = 'bg-success'
-                                statusText = 'Confirmed'
-                            }
-                            
-                            row.innerHTML = `
-                                <td>${shift.first_name} ${shift.last_name} (${shift.employee_id})</td>
-                                <td><span class="badge" style="background-color: ${shift.color}">${shift.shift_name}</span></td>
-                                <td>${startTime} - ${endTime}</td>
-                                <td><span class="badge ${statusClass}">${statusText}</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#shiftDetailsModal"
-                                            data-bs-dismiss="modal"
-                                            data-shift-id="${shift.id}"
-                                            data-shift-type-id="${shift.shift_type_id}"
-                                            data-employee-name="${shift.first_name} ${shift.last_name}"
-                                            data-employee-id="${shift.employee_id}"
-                                            data-shift-name="${shift.shift_name}"
-                                            data-start-time="${startTime}"
-                                            data-end-time="${endTime}"
-                                            data-date="${new Date(shift.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}"
-                                            data-notes="${shift.notes || ''}"
-                                            data-status="${shift.status}">
-                                        View Details
-                                    </button>
-                                </td>
-                            `
-                            
-                            tableBody.appendChild(row)
-                        })
+                // Get shifts for this date from the pre-loaded data
+                const shifts = <?php echo json_encode($shifts_by_date); ?>[date] || [];
+                const tableBody = dayShiftsModal.querySelector('#dayShiftsTableBody')
+                tableBody.innerHTML = ''
+                
+                if (shifts.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No shifts scheduled for this day</td></tr>'
+                    return
+                }
+                
+                shifts.forEach(shift => {
+                    const row = document.createElement('tr')
+                    
+                    // Format the time
+                    const startTime = new Date(`2000-01-01T${shift.start_time}`).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: true 
                     })
-                    .catch(error => {
-                        console.error('Error fetching day shifts:', error)
-                        dayShiftsModal.querySelector('#dayShiftsTableBody').innerHTML = 
-                            '<tr><td colspan="5" class="text-center text-danger">Error loading shifts</td></tr>'
+                    
+                    const endTime = new Date(`2000-01-01T${shift.end_time}`).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: true 
                     })
+                    
+                    // Status badge
+                    let statusClass = 'bg-warning'
+                    let statusText = 'Scheduled'
+                    if (shift.status === 'confirmed') {
+                        statusClass = 'bg-success'
+                        statusText = 'Confirmed'
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${shift.first_name} ${shift.last_name} (${shift.employee_id})</td>
+                        <td><span class="badge" style="background-color: ${shift.color}">${shift.shift_name}</span></td>
+                        <td>${startTime} - ${endTime}</td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#shiftDetailsModal"
+                                    data-bs-dismiss="modal"
+                                    data-shift-id="${shift.id}"
+                                    data-shift-type-id="${shift.shift_type_id}"
+                                    data-employee-name="${shift.first_name} ${shift.last_name}"
+                                    data-employee-id="${shift.employee_id}"
+                                    data-shift-name="${shift.shift_name}"
+                                    data-start-time="${startTime}"
+                                    data-end-time="${endTime}"
+                                    data-date="${new Date(shift.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}"
+                                    data-notes="${shift.notes || ''}"
+                                    data-status="${shift.status}">
+                                View Details
+                            </button>
+                        </td>
+                    `
+                    
+                    tableBody.appendChild(row)
+                })
             })
         }
         
