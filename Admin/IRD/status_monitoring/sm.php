@@ -315,10 +315,7 @@ unset($_SESSION['error_message']);
                 </a>
             
                 <div class="sidebar-dropdown collapse show" id="irdMenu">
-                    <a href="../../dashboard.php" class="sidebar-dropdown-link">
-                        <i class='bx bxs-dashboard'></i>
-                        <span>Dashboard</span>
-                    </a>
+                   
                     <a href="../incident_intake/ii.php" class="sidebar-dropdown-link">
                         <i class='bx bx-plus-medical'></i>
                         <span>Incident Intake</span>

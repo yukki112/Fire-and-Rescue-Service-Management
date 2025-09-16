@@ -682,10 +682,7 @@ $monthName = date('F Y', mktime(0, 0, 0, $currentMonth, 1, $currentYear));
                 </a>
             
                 <div class="sidebar-dropdown collapse" id="irdMenu">
-                    <a href="IRD/dashboard/index.php" class="sidebar-dropdown-link">
-                        <i class='bx bxs-dashboard'></i>
-                        <span>Dashboard</span>
-                    </a>
+               
                     <a href="../../IRD/incident_intake/ii.php" class="sidebar-dropdown-link">
                         <i class='bx bx-plus-medical'></i>
                         <span>Incident Intake</span>

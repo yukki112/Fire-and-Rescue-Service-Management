@@ -13,15 +13,19 @@ if (!isset($_SESSION['user_id'])) {
 // Set active tab and module for sidebar highlighting
 $active_tab = 'modules';
 $active_module = 'piar';
-$active_submodule = 'response_timeline_tracking';
+$active_submodule = 'personnel_and_unit_involvement';
 
 // Initialize variables
 $error_message = '';
 $success_message = '';
-$timeline_events = [];
-$event_details = null;
-$edit_mode = false;
+$personnel_involvements = [];
+$unit_involvements = [];
+$personnel_details = null;
+$unit_details = null;
+$edit_personnel_mode = false;
+$edit_unit_mode = false;
 $incidents = [];
+$employees = [];
 
 // Fetch all incidents for dropdown
 try {
@@ -31,100 +35,177 @@ try {
     error_log("Fetch incidents error: " . $e->getMessage());
 }
 
+// Fetch all employees for dropdown
+try {
+    $query = "SELECT id, first_name, last_name, employee_id FROM frsm.employees WHERE is_active = 1 ORDER BY last_name, first_name";
+    $employees = $dbManager->fetchAll("frsm", $query);
+} catch (Exception $e) {
+    error_log("Fetch employees error: " . $e->getMessage());
+}
+
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        if (isset($_POST['create_event'])) {
-            // Create new timeline event
-            $query = "INSERT INTO piar.response_timeline 
-                     (incident_id, event_type, event_description, event_time, unit_id, personnel_id, location, notes) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        // Personnel Involvement Form
+        if (isset($_POST['create_personnel_involvement'])) {
+            $query = "INSERT INTO piar.personnel_involvement 
+                     (incident_id, personnel_id, role, arrival_time, departure_time, actions_performed, performance_notes) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?)";
             
             $params = [
                 $_POST['incident_id'],
-                $_POST['event_type'],
-                $_POST['event_description'],
-                $_POST['event_time'],
-                $_POST['unit_id'] ?: null,
-                $_POST['personnel_id'] ?: null,
-                $_POST['location'] ?: null,
-                $_POST['notes'] ?: null
+                $_POST['personnel_id'],
+                $_POST['role'],
+                $_POST['arrival_time'] ?: null,
+                $_POST['departure_time'] ?: null,
+                $_POST['actions_performed'] ?: null,
+                $_POST['performance_notes'] ?: null
             ];
             
             $dbManager->query("piar", $query, $params);
-            $success_message = "Timeline event created successfully!";
+            $success_message = "Personnel involvement recorded successfully!";
             
-        } elseif (isset($_POST['update_event'])) {
-            // Update existing event
-            $event_id = $_POST['event_id'];
-            $query = "UPDATE piar.response_timeline 
-                     SET incident_id = ?, event_type = ?, event_description = ?, event_time = ?, 
-                         unit_id = ?, personnel_id = ?, location = ?, notes = ?
+        } elseif (isset($_POST['update_personnel_involvement'])) {
+            $involvement_id = $_POST['involvement_id'];
+            $query = "UPDATE piar.personnel_involvement 
+                     SET incident_id = ?, personnel_id = ?, role = ?, arrival_time = ?, 
+                         departure_time = ?, actions_performed = ?, performance_notes = ?
                      WHERE id = ?";
             
             $params = [
                 $_POST['incident_id'],
-                $_POST['event_type'],
-                $_POST['event_description'],
-                $_POST['event_time'],
-                $_POST['unit_id'] ?: null,
-                $_POST['personnel_id'] ?: null,
-                $_POST['location'] ?: null,
-                $_POST['notes'] ?: null,
-                $event_id
+                $_POST['personnel_id'],
+                $_POST['role'],
+                $_POST['arrival_time'] ?: null,
+                $_POST['departure_time'] ?: null,
+                $_POST['actions_performed'] ?: null,
+                $_POST['performance_notes'] ?: null,
+                $involvement_id
             ];
             
             $dbManager->query("piar", $query, $params);
-            $success_message = "Timeline event updated successfully!";
+            $success_message = "Personnel involvement updated successfully!";
+        }
+        
+        // Unit Involvement Form
+        if (isset($_POST['create_unit_involvement'])) {
+            $query = "INSERT INTO piar.unit_involvement 
+                     (incident_id, unit_id, dispatch_time, arrival_time, departure_time, equipment_used, actions_performed, performance_notes) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            $params = [
+                $_POST['incident_id'],
+                $_POST['unit_id'],
+                $_POST['dispatch_time'],
+                $_POST['arrival_time'] ?: null,
+                $_POST['departure_time'] ?: null,
+                $_POST['equipment_used'] ?: null,
+                $_POST['actions_performed'] ?: null,
+                $_POST['performance_notes'] ?: null
+            ];
+            
+            $dbManager->query("piar", $query, $params);
+            $success_message = "Unit involvement recorded successfully!";
+            
+        } elseif (isset($_POST['update_unit_involvement'])) {
+            $involvement_id = $_POST['involvement_id'];
+            $query = "UPDATE piar.unit_involvement 
+                     SET incident_id = ?, unit_id = ?, dispatch_time = ?, arrival_time = ?, 
+                         departure_time = ?, equipment_used = ?, actions_performed = ?, performance_notes = ?
+                     WHERE id = ?";
+            
+            $params = [
+                $_POST['incident_id'],
+                $_POST['unit_id'],
+                $_POST['dispatch_time'],
+                $_POST['arrival_time'] ?: null,
+                $_POST['departure_time'] ?: null,
+                $_POST['equipment_used'] ?: null,
+                $_POST['actions_performed'] ?: null,
+                $_POST['performance_notes'] ?: null,
+                $involvement_id
+            ];
+            
+            $dbManager->query("piar", $query, $params);
+            $success_message = "Unit involvement updated successfully!";
         }
     } catch (Exception $e) {
-        error_log("Timeline event error: " . $e->getMessage());
+        error_log("Involvement error: " . $e->getMessage());
         $error_message = "An error occurred while processing your request. Please try again.";
     }
 }
 
-// Handle GET requests (view/edit/delete events)
+// Handle GET requests (view/edit/delete)
 if (isset($_GET['action'])) {
     try {
-        if ($_GET['action'] === 'view' && isset($_GET['id'])) {
-            // View event details
-            $event_id = $_GET['id'];
-            $query = "SELECT rt.*, iar.report_title 
-                     FROM piar.response_timeline rt
-                     LEFT JOIN piar.incident_analysis_reports iar ON rt.incident_id = iar.id
-                     WHERE rt.id = ?";
-            $event_details = $dbManager->fetch("piar", $query, [$event_id]);
+        $type = $_GET['type'] ?? '';
+        $id = $_GET['id'] ?? 0;
+        
+        if ($_GET['action'] === 'view' && $id) {
+            if ($type === 'personnel') {
+                $query = "SELECT pi.*, iar.report_title, e.first_name, e.last_name, e.employee_id 
+                         FROM piar.personnel_involvement pi
+                         LEFT JOIN piar.incident_analysis_reports iar ON pi.incident_id = iar.id
+                         LEFT JOIN frsm.employees e ON pi.personnel_id = e.id
+                         WHERE pi.id = ?";
+                $personnel_details = $dbManager->fetch("piar", $query, [$id]);
+            } elseif ($type === 'unit') {
+                $query = "SELECT ui.*, iar.report_title 
+                         FROM piar.unit_involvement ui
+                         LEFT JOIN piar.incident_analysis_reports iar ON ui.incident_id = iar.id
+                         WHERE ui.id = ?";
+                $unit_details = $dbManager->fetch("piar", $query, [$id]);
+            }
             
-        } elseif ($_GET['action'] === 'edit' && isset($_GET['id'])) {
-            // Edit event
-            $event_id = $_GET['id'];
-            $query = "SELECT * FROM piar.response_timeline WHERE id = ?";
-            $event_details = $dbManager->fetch("piar", $query, [$event_id]);
-            $edit_mode = true;
+        } elseif ($_GET['action'] === 'edit' && $id) {
+            if ($type === 'personnel') {
+                $query = "SELECT * FROM piar.personnel_involvement WHERE id = ?";
+                $personnel_details = $dbManager->fetch("piar", $query, [$id]);
+                $edit_personnel_mode = true;
+            } elseif ($type === 'unit') {
+                $query = "SELECT * FROM piar.unit_involvement WHERE id = ?";
+                $unit_details = $dbManager->fetch("piar", $query, [$id]);
+                $edit_unit_mode = true;
+            }
             
-        } elseif ($_GET['action'] === 'delete' && isset($_GET['id'])) {
-            // Delete event
-            $event_id = $_GET['id'];
-            $query = "DELETE FROM piar.response_timeline WHERE id = ?";
-            $dbManager->query("piar", $query, [$event_id]);
-            $success_message = "Timeline event deleted successfully!";
+        } elseif ($_GET['action'] === 'delete' && $id) {
+            if ($type === 'personnel') {
+                $query = "DELETE FROM piar.personnel_involvement WHERE id = ?";
+                $dbManager->query("piar", $query, [$id]);
+                $success_message = "Personnel involvement deleted successfully!";
+            } elseif ($type === 'unit') {
+                $query = "DELETE FROM piar.unit_involvement WHERE id = ?";
+                $dbManager->query("piar", $query, [$id]);
+                $success_message = "Unit involvement deleted successfully!";
+            }
         }
     } catch (Exception $e) {
-        error_log("Timeline action error: " . $e->getMessage());
+        error_log("Involvement action error: " . $e->getMessage());
         $error_message = "An error occurred while processing your request. Please try again.";
     }
 }
 
-// Fetch all timeline events
+// Fetch all personnel involvements
 try {
-    $query = "SELECT rt.*, iar.report_title 
-             FROM piar.response_timeline rt
-             LEFT JOIN piar.incident_analysis_reports iar ON rt.incident_id = iar.id
-             ORDER BY rt.event_time DESC";
-    $timeline_events = $dbManager->fetchAll("piar", $query);
+    $query = "SELECT pi.*, iar.report_title, e.first_name, e.last_name, e.employee_id 
+             FROM piar.personnel_involvement pi
+             LEFT JOIN piar.incident_analysis_reports iar ON pi.incident_id = iar.id
+             LEFT JOIN frsm.employees e ON pi.personnel_id = e.id
+             ORDER BY pi.created_at DESC";
+    $personnel_involvements = $dbManager->fetchAll("piar", $query);
 } catch (Exception $e) {
-    error_log("Fetch timeline events error: " . $e->getMessage());
-    $error_message = "System temporarily unavailable. Please try again later.";
+    error_log("Fetch personnel involvements error: " . $e->getMessage());
+}
+
+// Fetch all unit involvements
+try {
+    $query = "SELECT ui.*, iar.report_title 
+             FROM piar.unit_involvement ui
+             LEFT JOIN piar.incident_analysis_reports iar ON ui.incident_id = iar.id
+             ORDER BY ui.created_at DESC";
+    $unit_involvements = $dbManager->fetchAll("piar", $query);
+} catch (Exception $e) {
+    error_log("Fetch unit involvements error: " . $e->getMessage());
 }
 
 // Display success/error messages from session
@@ -184,11 +265,11 @@ if (isset($_SESSION['error_message'])) {
             opacity: 0.9;
         }
         
-        .timeline-table {
+        .involvement-table {
             font-size: 0.9rem;
         }
         
-        .timeline-table th {
+        .involvement-table th {
             background-color: #f8f9fa;
             font-weight: 600;
         }
@@ -218,19 +299,6 @@ if (isset($_SESSION['error_message'])) {
             margin-bottom: 15px;
             display: block;
         }
-        
-        .event-type-badge {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .event-type-dispatch { background-color: #ffc107; color: #000; }
-        .event-type-response { background-color: #0d6efd; color: #fff; }
-        .event-type-arrival { background-color: #198754; color: #fff; }
-        .event-type-operation { background-color: #6c757d; color: #fff; }
-        .event-type-completion { background-color: #6610f2; color: #fff; }
         
         .action-btn {
             margin-right: 5px;
@@ -337,79 +405,20 @@ if (isset($_SESSION['error_message'])) {
             color: #0d6efd;
         }
         
-        /* Timeline visualization */
-        .timeline-container {
-            position: relative;
+        /* Involvement status badges */
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-active { background-color: #198754; color: #fff; }
+        .status-completed { background-color: #6c757d; color: #fff; }
+        
+        /* Tab content styling */
+        .tab-pane {
             padding: 20px 0;
-        }
-        
-        .timeline-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            width: 2px;
-            height: 100%;
-            background: #0d6efd;
-            transform: translateX(-50%);
-        }
-        
-        .timeline-event {
-            position: relative;
-            margin-bottom: 30px;
-            width: 50%;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .timeline-event:nth-child(odd) {
-            left: 0;
-            padding-right: 30px;
-        }
-        
-        .timeline-event:nth-child(even) {
-            left: 50%;
-            padding-left: 30px;
-        }
-        
-        .timeline-event::before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            width: 20px;
-            height: 20px;
-            background: #0d6efd;
-            border-radius: 50%;
-        }
-        
-        .timeline-event:nth-child(odd)::before {
-            right: -10px;
-        }
-        
-        .timeline-event:nth-child(even)::before {
-            left: -10px;
-        }
-        
-        .event-time {
-            font-weight: bold;
-            color: #0d6efd;
-            margin-bottom: 5px;
-        }
-        
-        .event-type {
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-        
-        .event-description {
-            margin-bottom: 10px;
-        }
-        
-        .event-details {
-            font-size: 0.85rem;
-            color: #6c757d;
         }
     </style>
 </head>
@@ -447,10 +456,7 @@ if (isset($_SESSION['error_message'])) {
                 </a>
             
                 <div class="sidebar-dropdown collapse" id="irdMenu">
-                    <a href="IRD/dashboard/index.php" class="sidebar-dropdown-link">
-                        <i class='bx bxs-dashboard'></i>
-                        <span>Dashboard</span>
-                    </a>
+               
                     <a href="../../IRD/incident_intake/ii.php" class="sidebar-dropdown-link">
                         <i class='bx bx-plus-medical'></i>
                         <span>Incident Intake</span>
@@ -650,11 +656,11 @@ if (isset($_SESSION['error_message'])) {
                         <i class='bx bx-file'></i>
                         <span>Incident Summary Documentation</span>
                     </a>
-                    <a href="rtt.php" class="sidebar-dropdown-link active">
+                    <a href="../response_timeline_tracking/rtt.php" class="sidebar-dropdown-link">
                         <i class='bx bx-time-five'></i>
                         <span>Response Timeline Tracking</span>
                     </a>
-                     <a href="../personnel_and_unit_involvement/paui.php" class="sidebar-dropdown-link">
+                     <a href="paui.php" class="sidebar-dropdown-link active">
                         <i class='bx bx-group'></i>
                         <span>Personnel and Unit Involvement</span>
                     </a>
@@ -700,12 +706,15 @@ if (isset($_SESSION['error_message'])) {
             <!-- Header -->
             <div class="dashboard-header">
                 <div class="header-title">
-                    <h1>Response Timeline Tracking</h1>
-                    <p>Track and manage incident response timelines</p>
+                    <h1>Personnel and Unit Involvement</h1>
+                    <p>Track personnel and unit involvement in incidents</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEventModal">
-                        <i class='bx bx-plus'></i> New Timeline Event
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPersonnelModal">
+                        <i class='bx bx-user-plus'></i> Add Personnel
+                    </button>
+                    <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#createUnitModal">
+                        <i class='bx bx-car'></i> Add Unit
                     </button>
                 </div>
             </div>
@@ -725,121 +734,273 @@ if (isset($_SESSION['error_message'])) {
                 </div>
             <?php endif; ?>
             
-            <!-- Event List / Details View -->
-            <?php if ($event_details): ?>
-                <!-- Event Details View -->
+            <!-- Personnel/Unit Details View -->
+            <?php if ($personnel_details): ?>
+                <!-- Personnel Details View -->
                 <div class="dashboard-card">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4>Timeline Event Details</h4>
+                        <h4>Personnel Involvement Details</h4>
                         <div>
-                            <span class="event-type-badge event-type-<?php echo strtolower($event_details['event_type']); ?>">
-                                <?php echo ucfirst($event_details['event_type']); ?>
-                            </span>
+                            <?php if ($personnel_details['departure_time']): ?>
+                                <span class="status-badge status-completed">Completed</span>
+                            <?php else: ?>
+                                <span class="status-badge status-active">Active</span>
+                            <?php endif; ?>
                         </div>
                     </div>
                     
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <p><strong>Incident:</strong> <?php echo htmlspecialchars($event_details['report_title'] ?? 'Unknown Incident'); ?></p>
-                            <p><strong>Event Time:</strong> <?php echo date('M j, Y g:i A', strtotime($event_details['event_time'])); ?></p>
+                            <p><strong>Incident:</strong> <?php echo htmlspecialchars($personnel_details['report_title'] ?? 'Unknown Incident'); ?></p>
+                            <p><strong>Personnel:</strong> <?php echo htmlspecialchars($personnel_details['first_name'] . ' ' . $personnel_details['last_name'] . ' (' . $personnel_details['employee_id'] . ')'); ?></p>
+                            <p><strong>Role:</strong> <?php echo htmlspecialchars($personnel_details['role'] ?? 'Not specified'); ?></p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Location:</strong> <?php echo htmlspecialchars($event_details['location'] ?? 'Not specified'); ?></p>
-                            <p><strong>Unit ID:</strong> <?php echo htmlspecialchars($event_details['unit_id'] ?? 'Not specified'); ?></p>
+                            <p><strong>Arrival Time:</strong> <?php echo $personnel_details['arrival_time'] ? date('M j, Y g:i A', strtotime($personnel_details['arrival_time'])) : 'Not recorded'; ?></p>
+                            <p><strong>Departure Time:</strong> <?php echo $personnel_details['departure_time'] ? date('M j, Y g:i A', strtotime($personnel_details['departure_time'])) : 'Not recorded'; ?></p>
                         </div>
                     </div>
                     
+                    <?php if (!empty($personnel_details['actions_performed'])): ?>
                     <div class="form-section">
-                        <h5 class="form-section-title">Event Description</h5>
-                        <p><?php echo nl2br(htmlspecialchars($event_details['event_description'])); ?></p>
+                        <h5 class="form-section-title">Actions Performed</h5>
+                        <p><?php echo nl2br(htmlspecialchars($personnel_details['actions_performed'])); ?></p>
                     </div>
+                    <?php endif; ?>
                     
-                    <?php if (!empty($event_details['notes'])): ?>
+                    <?php if (!empty($personnel_details['performance_notes'])): ?>
                     <div class="form-section">
-                        <h5 class="form-section-title">Additional Notes</h5>
-                        <p><?php echo nl2br(htmlspecialchars($event_details['notes'])); ?></p>
+                        <h5 class="form-section-title">Performance Notes</h5>
+                        <p><?php echo nl2br(htmlspecialchars($personnel_details['performance_notes'])); ?></p>
                     </div>
                     <?php endif; ?>
                     
                     <div class="d-flex justify-content-end mt-4">
-                        <a href="rtt.php" class="btn btn-secondary me-2">Back to List</a>
-                        <a href="rtt.php?action=edit&id=<?php echo $event_details['id']; ?>" class="btn btn-primary me-2">Edit</a>
+                        <a href="paui.php" class="btn btn-secondary me-2">Back to List</a>
+                        <a href="paui.php?action=edit&type=personnel&id=<?php echo $personnel_details['id']; ?>" class="btn btn-primary me-2">Edit</a>
                         
                         <!-- Delete Form -->
                         <form method="GET" class="d-inline">
                             <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" value="<?php echo $event_details['id']; ?>">
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this timeline event?')">Delete</button>
+                            <input type="hidden" name="type" value="personnel">
+                            <input type="hidden" name="id" value="<?php echo $personnel_details['id']; ?>">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this personnel involvement record?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            <?php elseif ($unit_details): ?>
+                <!-- Unit Details View -->
+                <div class="dashboard-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4>Unit Involvement Details</h4>
+                        <div>
+                            <?php if ($unit_details['departure_time']): ?>
+                                <span class="status-badge status-completed">Completed</span>
+                            <?php else: ?>
+                                <span class="status-badge status-active">Active</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Incident:</strong> <?php echo htmlspecialchars($unit_details['report_title'] ?? 'Unknown Incident'); ?></p>
+                            <p><strong>Unit ID:</strong> <?php echo htmlspecialchars($unit_details['unit_id'] ?? 'Not specified'); ?></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Dispatch Time:</strong> <?php echo date('M j, Y g:i A', strtotime($unit_details['dispatch_time'])); ?></p>
+                            <p><strong>Arrival Time:</strong> <?php echo $unit_details['arrival_time'] ? date('M j, Y g:i A', strtotime($unit_details['arrival_time'])) : 'Not recorded'; ?></p>
+                            <p><strong>Departure Time:</strong> <?php echo $unit_details['departure_time'] ? date('M j, Y g:i A', strtotime($unit_details['departure_time'])) : 'Not recorded'; ?></p>
+                        </div>
+                    </div>
+                    
+                    <?php if (!empty($unit_details['equipment_used'])): ?>
+                    <div class="form-section">
+                        <h5 class="form-section-title">Equipment Used</h5>
+                        <p><?php echo nl2br(htmlspecialchars($unit_details['equipment_used'])); ?></p>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if (!empty($unit_details['actions_performed'])): ?>
+                    <div class="form-section">
+                        <h5 class="form-section-title">Actions Performed</h5>
+                        <p><?php echo nl2br(htmlspecialchars($unit_details['actions_performed'])); ?></p>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if (!empty($unit_details['performance_notes'])): ?>
+                    <div class="form-section">
+                        <h5 class="form-section-title">Performance Notes</h5>
+                        <p><?php echo nl2br(htmlspecialchars($unit_details['performance_notes'])); ?></p>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <div class="d-flex justify-content-end mt-4">
+                        <a href="paui.php" class="btn btn-secondary me-2">Back to List</a>
+                        <a href="paui.php?action=edit&type=unit&id=<?php echo $unit_details['id']; ?>" class="btn btn-primary me-2">Edit</a>
+                        
+                        <!-- Delete Form -->
+                        <form method="GET" class="d-inline">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="type" value="unit">
+                            <input type="hidden" name="id" value="<?php echo $unit_details['id']; ?>">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this unit involvement record?')">Delete</button>
                         </form>
                     </div>
                 </div>
             <?php else: ?>
-                <!-- Event List View -->
-                <div class="dashboard-card">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4>Response Timeline Events</h4>
-                        <div class="form-group">
-                            <input type="text" class="form-control" placeholder="Search events..." id="searchInput">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs" id="involvementTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="personnel-tab" data-bs-toggle="tab" data-bs-target="#personnel" type="button" role="tab" aria-controls="personnel" aria-selected="true">
+                            <i class='bx bx-user'></i> Personnel Involvement
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="unit-tab" data-bs-toggle="tab" data-bs-target="#unit" type="button" role="tab" aria-controls="unit" aria-selected="false">
+                            <i class='bx bx-car'></i> Unit Involvement
+                        </button>
+                    </li>
+                </ul>
+                
+                <!-- Tab Content -->
+                <div class="tab-content" id="involvementTabsContent">
+                    <!-- Personnel Involvement Tab -->
+                    <div class="tab-pane fade show active" id="personnel" role="tabpanel" aria-labelledby="personnel-tab">
+                        <div class="dashboard-card">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4>Personnel Involvement Records</h4>
+                                <div class="form-group">
+                                    <input type="text" class="form-control" placeholder="Search personnel..." id="personnelSearch">
+                                </div>
+                            </div>
+                            
+                            <?php if (!empty($personnel_involvements)): ?>
+                                <div class="table-responsive">
+                                    <table class="table table-hover involvement-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Incident</th>
+                                                <th>Personnel</th>
+                                                <th>Role</th>
+                                                <th>Arrival Time</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($personnel_involvements as $personnel): ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($personnel['report_title'] ?? 'Unknown Incident'); ?></td>
+                                                    <td><?php echo htmlspecialchars($personnel['first_name'] . ' ' . $personnel['last_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($personnel['role'] ?? 'Not specified'); ?></td>
+                                                    <td><?php echo $personnel['arrival_time'] ? date('M j, Y g:i A', strtotime($personnel['arrival_time'])) : 'Not recorded'; ?></td>
+                                                    <td>
+                                                        <?php if ($personnel['departure_time']): ?>
+                                                            <span class="status-badge status-completed">Completed</span>
+                                                        <?php else: ?>
+                                                            <span class="status-badge status-active">Active</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td>
+                                                        <a href="paui.php?action=view&type=personnel&id=<?php echo $personnel['id']; ?>" class="btn btn-sm btn-info action-btn" title="View">
+                                                            <i class='bx bx-show'></i>
+                                                        </a>
+                                                        <a href="paui.php?action=edit&type=personnel&id=<?php echo $personnel['id']; ?>" class="btn btn-sm btn-primary action-btn" title="Edit">
+                                                            <i class='bx bx-edit'></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php else: ?>
+                                <div class="empty-state">
+                                    <i class='bx bx-user-x'></i>
+                                    <h5>No Personnel Involvement Records</h5>
+                                    <p>Get started by adding personnel involvement records.</p>
+                                    <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#createPersonnelModal">
+                                        Add Personnel Involvement
+                                    </button>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                     
-                    <?php if (!empty($timeline_events)): ?>
-                        <div class="table-responsive">
-                            <table class="table table-hover timeline-table">
-                                <thead>
-                                    <tr>
-                                        <th>Incident</th>
-                                        <th>Event Type</th>
-                                        <th>Event Time</th>
-                                        <th>Description</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($timeline_events as $event): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($event['report_title'] ?? 'Unknown Incident'); ?></td>
-                                            <td>
-                                                <span class="event-type-badge event-type-<?php echo strtolower($event['event_type']); ?>">
-                                                    <?php echo ucfirst($event['event_type']); ?>
-                                                </span>
-                                            </td>
-                                            <td><?php echo date('M j, Y g:i A', strtotime($event['event_time'])); ?></td>
-                                            <td><?php echo htmlspecialchars(substr($event['event_description'], 0, 50) . (strlen($event['event_description']) > 50 ? '...' : '')); ?></td>
-                                            <td>
-                                                <a href="rtt.php?action=view&id=<?php echo $event['id']; ?>" class="btn btn-sm btn-info action-btn" title="View">
-                                                    <i class='bx bx-show'></i>
-                                                </a>
-                                                <a href="rtt.php?action=edit&id=<?php echo $event['id']; ?>" class="btn btn-sm btn-primary action-btn" title="Edit">
-                                                    <i class='bx bx-edit'></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                    <!-- Unit Involvement Tab -->
+                    <div class="tab-pane fade" id="unit" role="tabpanel" aria-labelledby="unit-tab">
+                        <div class="dashboard-card">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4>Unit Involvement Records</h4>
+                                <div class="form-group">
+                                    <input type="text" class="form-control" placeholder="Search units..." id="unitSearch">
+                                </div>
+                            </div>
+                            
+                            <?php if (!empty($unit_involvements)): ?>
+                                <div class="table-responsive">
+                                    <table class="table table-hover involvement-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Incident</th>
+                                                <th>Unit ID</th>
+                                                <th>Dispatch Time</th>
+                                                <th>Arrival Time</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($unit_involvements as $unit): ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($unit['report_title'] ?? 'Unknown Incident'); ?></td>
+                                                    <td><?php echo htmlspecialchars($unit['unit_id'] ?? 'Not specified'); ?></td>
+                                                    <td><?php echo date('M j, Y g:i A', strtotime($unit['dispatch_time'])); ?></td>
+                                                    <td><?php echo $unit['arrival_time'] ? date('M j, Y g:i A', strtotime($unit['arrival_time'])) : 'Not recorded'; ?></td>
+                                                    <td>
+                                                        <?php if ($unit['departure_time']): ?>
+                                                            <span class="status-badge status-completed">Completed</span>
+                                                        <?php else: ?>
+                                                            <span class="status-badge status-active">Active</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td>
+                                                        <a href="paui.php?action=view&type=unit&id=<?php echo $unit['id']; ?>" class="btn btn-sm btn-info action-btn" title="View">
+                                                            <i class='bx bx-show'></i>
+                                                        </a>
+                                                        <a href="paui.php?action=edit&type=unit&id=<?php echo $unit['id']; ?>" class="btn btn-sm btn-primary action-btn" title="Edit">
+                                                            <i class='bx bx-edit'></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php else: ?>
+                                <div class="empty-state">
+                                    <i class='bx bx-car'></i>
+                                    <h5>No Unit Involvement Records</h5>
+                                    <p>Get started by adding unit involvement records.</p>
+                                    <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#createUnitModal">
+                                        Add Unit Involvement
+                                    </button>
+                                </div>
+                            <?php endif; ?>
                         </div>
-                    <?php else: ?>
-                        <div class="empty-state">
-                            <i class='bx bx-time'></i>
-                            <h5>No Timeline Events</h5>
-                            <p>Get started by creating your first timeline event.</p>
-                            <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#createEventModal">
-                                Create Timeline Event
-                            </button>
-                        </div>
-                    <?php endif; ?>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 
-    <!-- Create Event Modal -->
-    <div class="modal fade" id="createEventModal" tabindex="-1" aria-hidden="true">
+    <!-- Create Personnel Involvement Modal -->
+    <div class="modal fade" id="createPersonnelModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Create New Timeline Event</h5>
+                    <h5 class="modal-title">Add Personnel Involvement</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="POST">
@@ -855,70 +1016,129 @@ if (isset($_SESSION['error_message'])) {
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="event_type" class="form-label">Event Type</label>
-                                <select class="form-select" id="event_type" name="event_type" required>
-                                    <option value="">Select Event Type</option>
-                                    <option value="dispatch">Dispatch</option>
-                                    <option value="response">Response</option>
-                                    <option value="arrival">Arrival</option>
-                                    <option value="operation">Operation</option>
-                                    <option value="completion">Completion</option>
+                                <label for="personnel_id" class="form-label">Personnel</label>
+                                <select class="form-select" id="personnel_id" name="personnel_id" required>
+                                    <option value="">Select Personnel</option>
+                                    <?php foreach ($employees as $employee): ?>
+                                        <option value="<?php echo $employee['id']; ?>"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name'] . ' (' . $employee['employee_id'] . ')'); ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="event_time" class="form-label">Event Time</label>
-                                <input type="datetime-local" class="form-control" id="event_time" name="event_time" required>
+                                <label for="role" class="form-label">Role</label>
+                                <input type="text" class="form-control" id="role" name="role" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="location" class="form-label">Location</label>
-                                <input type="text" class="form-control" id="location" name="location">
+                                <label for="arrival_time" class="form-label">Arrival Time</label>
+                                <input type="datetime-local" class="form-control" id="arrival_time" name="arrival_time">
                             </div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="unit_id" class="form-label">Unit ID</label>
-                                <input type="text" class="form-control" id="unit_id" name="unit_id">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="personnel_id" class="form-label">Personnel ID</label>
-                                <input type="text" class="form-control" id="personnel_id" name="personnel_id">
+                                <label for="departure_time" class="form-label">Departure Time</label>
+                                <input type="datetime-local" class="form-control" id="departure_time" name="departure_time">
                             </div>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="event_description" class="form-label">Event Description</label>
-                            <textarea class="form-control" id="event_description" name="event_description" rows="3" required></textarea>
+                            <label for="actions_performed" class="form-label">Actions Performed</label>
+                            <textarea class="form-control" id="actions_performed" name="actions_performed" rows="3"></textarea>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="notes" class="form-label">Additional Notes</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                            <label for="performance_notes" class="form-label">Performance Notes</label>
+                            <textarea class="form-control" id="performance_notes" name="performance_notes" rows="2"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary" name="create_event">Create Event</button>
+                        <button type="submit" class="btn btn-primary" name="create_personnel_involvement">Add Involvement</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Edit Event Modal -->
-    <?php if ($edit_mode && $event_details): ?>
-    <div class="modal fade show" id="editEventModal" tabindex="-1" aria-hidden="false" style="display: block; padding-right: 17px;">
+    <!-- Create Unit Involvement Modal -->
+    <div class="modal fade" id="createUnitModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Timeline Event</h5>
-                    <a href="rtt.php" class="btn-close" aria-label="Close"></a>
+                    <h5 class="modal-title">Add Unit Involvement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="POST">
-                    <input type="hidden" name="event_id" value="<?php echo $event_details['id']; ?>">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="unit_incident_id" class="form-label">Incident</label>
+                                <select class="form-select" id="unit_incident_id" name="incident_id" required>
+                                    <option value="">Select Incident</option>
+                                    <?php foreach ($incidents as $incident): ?>
+                                        <option value="<?php echo $incident['id']; ?>"><?php echo htmlspecialchars($incident['report_title']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="unit_id" class="form-label">Unit ID</label>
+                                <input type="text" class="form-control" id="unit_id" name="unit_id" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="dispatch_time" class="form-label">Dispatch Time</label>
+                                <input type="datetime-local" class="form-control" id="dispatch_time" name="dispatch_time" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="unit_arrival_time" class="form-label">Arrival Time</label>
+                                <input type="datetime-local" class="form-control" id="unit_arrival_time" name="arrival_time">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="unit_departure_time" class="form-label">Departure Time</label>
+                                <input type="datetime-local" class="form-control" id="unit_departure_time" name="departure_time">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="equipment_used" class="form-label">Equipment Used</label>
+                            <textarea class="form-control" id="equipment_used" name="equipment_used" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="unit_actions_performed" class="form-label">Actions Performed</label>
+                            <textarea class="form-control" id="unit_actions_performed" name="actions_performed" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="unit_performance_notes" class="form-label">Performance Notes</label>
+                            <textarea class="form-control" id="unit_performance_notes" name="performance_notes" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" name="create_unit_involvement">Add Involvement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Personnel Involvement Modal -->
+    <?php if ($edit_personnel_mode && $personnel_details): ?>
+    <div class="modal fade show" id="editPersonnelModal" tabindex="-1" aria-hidden="false" style="display: block; padding-right: 17px;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Personnel Involvement</h5>
+                    <a href="paui.php" class="btn-close" aria-label="Close"></a>
+                </div>
+                <form method="POST">
+                    <input type="hidden" name="involvement_id" value="<?php echo $personnel_details['id']; ?>">
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -926,64 +1146,133 @@ if (isset($_SESSION['error_message'])) {
                                 <select class="form-select" id="edit_incident_id" name="incident_id" required>
                                     <option value="">Select Incident</option>
                                     <?php foreach ($incidents as $incident): ?>
-                                        <option value="<?php echo $incident['id']; ?>" <?php echo $event_details['incident_id'] == $incident['id'] ? 'selected' : ''; ?>>
+                                        <option value="<?php echo $incident['id']; ?>" <?php echo $personnel_details['incident_id'] == $incident['id'] ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($incident['report_title']); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="edit_event_type" class="form-label">Event Type</label>
-                                <select class="form-select" id="edit_event_type" name="event_type" required>
-                                    <option value="">Select Event Type</option>
-                                    <option value="dispatch" <?php echo $event_details['event_type'] == 'dispatch' ? 'selected' : ''; ?>>Dispatch</option>
-                                    <option value="response" <?php echo $event_details['event_type'] == 'response' ? 'selected' : ''; ?>>Response</option>
-                                    <option value="arrival" <?php echo $event_details['event_type'] == 'arrival' ? 'selected' : ''; ?>>Arrival</option>
-                                    <option value="operation" <?php echo $event_details['event_type'] == 'operation' ? 'selected' : ''; ?>>Operation</option>
-                                    <option value="completion" <?php echo $event_details['event_type'] == 'completion' ? 'selected' : ''; ?>>Completion</option>
+                                <label for="edit_personnel_id" class="form-label">Personnel</label>
+                                <select class="form-select" id="edit_personnel_id" name="personnel_id" required>
+                                    <option value="">Select Personnel</option>
+                                    <?php foreach ($employees as $employee): ?>
+                                        <option value="<?php echo $employee['id']; ?>" <?php echo $personnel_details['personnel_id'] == $employee['id'] ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name'] . ' (' . $employee['employee_id'] . ')'); ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="edit_event_time" class="form-label">Event Time</label>
-                                <input type="datetime-local" class="form-control" id="edit_event_time" name="event_time" 
-                                       value="<?php echo date('Y-m-d\TH:i', strtotime($event_details['event_time'])); ?>" required>
+                                <label for="edit_role" class="form-label">Role</label>
+                                <input type="text" class="form-control" id="edit_role" name="role" value="<?php echo htmlspecialchars($personnel_details['role'] ?? ''); ?>" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="edit_location" class="form-label">Location</label>
-                                <input type="text" class="form-control" id="edit_location" name="location" 
-                                       value="<?php echo htmlspecialchars($event_details['location'] ?? ''); ?>">
+                                <label for="edit_arrival_time" class="form-label">Arrival Time</label>
+                                <input type="datetime-local" class="form-control" id="edit_arrival_time" name="arrival_time" 
+                                       value="<?php echo $personnel_details['arrival_time'] ? date('Y-m-d\TH:i', strtotime($personnel_details['arrival_time'])) : ''; ?>">
                             </div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="edit_unit_id" class="form-label">Unit ID</label>
-                                <input type="text" class="form-control" id="edit_unit_id" name="unit_id" 
-                                       value="<?php echo htmlspecialchars($event_details['unit_id'] ?? ''); ?>">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="edit_personnel_id" class="form-label">Personnel ID</label>
-                                <input type="text" class="form-control" id="edit_personnel_id" name="personnel_id" 
-                                       value="<?php echo htmlspecialchars($event_details['personnel_id'] ?? ''); ?>">
+                                <label for="edit_departure_time" class="form-label">Departure Time</label>
+                                <input type="datetime-local" class="form-control" id="edit_departure_time" name="departure_time" 
+                                       value="<?php echo $personnel_details['departure_time'] ? date('Y-m-d\TH:i', strtotime($personnel_details['departure_time'])) : ''; ?>">
                             </div>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="edit_event_description" class="form-label">Event Description</label>
-                            <textarea class="form-control" id="edit_event_description" name="event_description" rows="3" required><?php echo htmlspecialchars($event_details['event_description']); ?></textarea>
+                            <label for="edit_actions_performed" class="form-label">Actions Performed</label>
+                            <textarea class="form-control" id="edit_actions_performed" name="actions_performed" rows="3"><?php echo htmlspecialchars($personnel_details['actions_performed'] ?? ''); ?></textarea>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="edit_notes" class="form-label">Additional Notes</label>
-                            <textarea class="form-control" id="edit_notes" name="notes" rows="2"><?php echo htmlspecialchars($event_details['notes'] ?? ''); ?></textarea>
+                            <label for="edit_performance_notes" class="form-label">Performance Notes</label>
+                            <textarea class="form-control" id="edit_performance_notes" name="performance_notes" rows="2"><?php echo htmlspecialchars($personnel_details['performance_notes'] ?? ''); ?></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <a href="rtt.php" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary" name="update_event">Update Event</button>
+                        <a href="paui.php" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary" name="update_personnel_involvement">Update Involvement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+    <?php endif; ?>
+
+    <!-- Edit Unit Involvement Modal -->
+    <?php if ($edit_unit_mode && $unit_details): ?>
+    <div class="modal fade show" id="editUnitModal" tabindex="-1" aria-hidden="false" style="display: block; padding-right: 17px;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Unit Involvement</h5>
+                    <a href="paui.php" class="btn-close" aria-label="Close"></a>
+                </div>
+                <form method="POST">
+                    <input type="hidden" name="involvement_id" value="<?php echo $unit_details['id']; ?>">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_unit_incident_id" class="form-label">Incident</label>
+                                <select class="form-select" id="edit_unit_incident_id" name="incident_id" required>
+                                    <option value="">Select Incident</option>
+                                    <?php foreach ($incidents as $incident): ?>
+                                        <option value="<?php echo $incident['id']; ?>" <?php echo $unit_details['incident_id'] == $incident['id'] ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($incident['report_title']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_unit_id" class="form-label">Unit ID</label>
+                                <input type="text" class="form-control" id="edit_unit_id" name="unit_id" 
+                                       value="<?php echo htmlspecialchars($unit_details['unit_id'] ?? ''); ?>" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="edit_dispatch_time" class="form-label">Dispatch Time</label>
+                                <input type="datetime-local" class="form-control" id="edit_dispatch_time" name="dispatch_time" 
+                                       value="<?php echo date('Y-m-d\TH:i', strtotime($unit_details['dispatch_time'])); ?>" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="edit_unit_arrival_time" class="form-label">Arrival Time</label>
+                                <input type="datetime-local" class="form-control" id="edit_unit_arrival_time" name="arrival_time" 
+                                       value="<?php echo $unit_details['arrival_time'] ? date('Y-m-d\TH:i', strtotime($unit_details['arrival_time'])) : ''; ?>">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="edit_unit_departure_time" class="form-label">Departure Time</label>
+                                <input type="datetime-local" class="form-control" id="edit_unit_departure_time" name="departure_time" 
+                                       value="<?php echo $unit_details['departure_time'] ? date('Y-m-d\TH:i', strtotime($unit_details['departure_time'])) : ''; ?>">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="edit_equipment_used" class="form-label">Equipment Used</label>
+                            <textarea class="form-control" id="edit_equipment_used" name="equipment_used" rows="2"><?php echo htmlspecialchars($unit_details['equipment_used'] ?? ''); ?></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="edit_unit_actions_performed" class="form-label">Actions Performed</label>
+                            <textarea class="form-control" id="edit_unit_actions_performed" name="actions_performed" rows="3"><?php echo htmlspecialchars($unit_details['actions_performed'] ?? ''); ?></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="edit_unit_performance_notes" class="form-label">Performance Notes</label>
+                            <textarea class="form-control" id="edit_unit_performance_notes" name="performance_notes" rows="2"><?php echo htmlspecialchars($unit_details['performance_notes'] ?? ''); ?></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="paui.php" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary" name="update_unit_involvement">Update Involvement</button>
                     </div>
                 </form>
             </div>
@@ -1000,9 +1289,9 @@ if (isset($_SESSION['error_message'])) {
         });
         
         // Search functionality
-        document.getElementById('searchInput')?.addEventListener('keyup', function() {
+        document.getElementById('personnelSearch')?.addEventListener('keyup', function() {
             const searchText = this.value.toLowerCase();
-            const rows = document.querySelectorAll('.timeline-table tbody tr');
+            const rows = document.querySelectorAll('#personnel .involvement-table tbody tr');
             
             rows.forEach(row => {
                 const text = row.textContent.toLowerCase();
@@ -1010,14 +1299,30 @@ if (isset($_SESSION['error_message'])) {
             });
         });
         
-        // Auto set current datetime for new events
+        document.getElementById('unitSearch')?.addEventListener('keyup', function() {
+            const searchText = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#unit .involvement-table tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchText) ? '' : 'none';
+            });
+        });
+        
+        // Auto set current datetime for new records
         document.addEventListener('DOMContentLoaded', function() {
-            const eventTimeInput = document.getElementById('event_time');
-            if (eventTimeInput && !eventTimeInput.value) {
+            const dispatchTimeInput = document.getElementById('dispatch_time');
+            if (dispatchTimeInput && !dispatchTimeInput.value) {
                 const now = new Date();
-                // Format to YYYY-MM-DDTHH:MM
                 const formatted = now.toISOString().slice(0, 16);
-                eventTimeInput.value = formatted;
+                dispatchTimeInput.value = formatted;
+            }
+            
+            const arrivalTimeInput = document.getElementById('arrival_time');
+            if (arrivalTimeInput && !arrivalTimeInput.value) {
+                const now = new Date();
+                const formatted = now.toISOString().slice(0, 16);
+                arrivalTimeInput.value = formatted;
             }
         });
     </script>
