@@ -1,7 +1,7 @@
 <?php
 $host = 'localhost';
-$dbname = 'frsm_frsm';
-$username = 'frsm_frsm';
+$dbname = 'frsm_1';
+$username = 'frsm_1';
 $password = 'Admin123';
 
 try {

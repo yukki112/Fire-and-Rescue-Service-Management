@@ -4,52 +4,52 @@ if (!class_exists('DatabaseManager')) {
     class DatabaseManager {
         private $connections = [];
         private $config = [
-           'ird' => [
+            'ird' => [
                 'host' => 'localhost',
-                'dbname' => 'frsm_ird',
-                'username' => 'frsm_ird',
+                'dbname' => 'frsm_2',
+                'username' => 'frsm_2',
                 'password' => 'Admin123'
             ],
             'frsm' => [
                 'host' => 'localhost',
-                'dbname' => 'frsm_frsm',
-                'username' => 'frsm_frsm',
+                'dbname' => 'frsm_1',
+                'username' => 'frsm_1',
                 'password' => 'Admin123'
             ],
             'ficr' => [
                 'host' => 'localhost',
-                'dbname' => 'frsm_ficr',
-                'username' => 'frsm_ficr',
+                'dbname' => 'frsm_7',
+                'username' => 'frsm_7',
                 'password' => 'Admin123'
             ],
             'fsiet' => [
                 'host' => 'localhost',
-                'dbname' => 'frsm_fsiet',
-                'username' => 'frsm_fsiet',
+                'dbname' => 'frsm_3',
+                'username' => 'frsm_3',
                 'password' => 'Admin123'
             ],
             'hwrm' => [
                 'host' => 'localhost',
-                'dbname' => 'frsm_hwrm',
-                'username' => 'frsm_hwrm',
+                'dbname' => 'frsm_4',
+                'username' => 'frsm_4',
                 'password' => 'Admin123'
             ],
             'piar' => [
                 'host' => 'localhost',
-                'dbname' => 'frsm_piar',
-                'username' => 'frsm_piar',
+                'dbname' => 'frsm_8',
+                'username' => 'frsm_8',
                 'password' => 'Admin123'
             ],
             'pss' => [
                 'host' => 'localhost',
-                'dbname' => 'frsm_pss',
-                'username' => 'frsm_pss',
+                'dbname' => 'frsm_5',
+                'username' => 'frsm_5',
                 'password' => 'Admin123'
             ],
             'tcr' => [
                 'host' => 'localhost',
-                'dbname' => 'frsm_tcr',
-                'username' => 'frsm_tcr',
+                'dbname' => 'frsm_6',
+                'username' => 'frsm_6',
                 'password' => 'Admin123'
             ]
         ];
